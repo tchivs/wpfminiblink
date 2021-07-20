@@ -21,11 +21,11 @@ using WpfMiniBlink.Ime;
 
 namespace WpfMiniBlink
 {
-    public class MiniblinkBrowser : Border, IMiniblink, INotifyPropertyChanged
+    public sealed class MiniblinkBrowser : Border, IMiniblink, INotifyPropertyChanged
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        protected virtual void OnPropertyChanged(string propertyName)
+        private void OnPropertyChanged(string propertyName)
         {
             PropertyChangedEventHandler handler = this.PropertyChanged;
             if (handler != null)
@@ -57,7 +57,8 @@ namespace WpfMiniBlink
 
         private bool DesignMode
         {
-            get {
+            get
+            {
                 return true;
             }
         }
@@ -190,7 +191,7 @@ namespace WpfMiniBlink
         }
 
 
-        
+
 
         [Browsable(false)]
         [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
@@ -330,7 +331,7 @@ namespace WpfMiniBlink
         /// <param name="specs"></param>
         /// <param name="replace"></param>
         /// <returns></returns>
-        protected virtual WindowOpenEventArgs OnWindowOpen(string url, string name,
+        private WindowOpenEventArgs OnWindowOpen(string url, string name,
             IDictionary<string, string> specs, bool replace)
         {
             var args = new WindowOpenEventArgs
@@ -357,7 +358,7 @@ namespace WpfMiniBlink
             return args;
         }
 
-        protected virtual void onWkeDidCreateScriptContextCallback(IntPtr webView, IntPtr param, IntPtr frame,
+        private void onWkeDidCreateScriptContextCallback(IntPtr webView, IntPtr param, IntPtr frame,
             IntPtr context,
             int extensionGroup, int worldId)
         {
@@ -393,7 +394,7 @@ namespace WpfMiniBlink
         /// <param name="param"></param>
         /// <param name="frame"></param>
         /// <param name="url"></param>
-        protected virtual void OnUrlChanged(IntPtr mb, IntPtr param, IntPtr frame, IntPtr url)
+        private void OnUrlChanged(IntPtr mb, IntPtr param, IntPtr frame, IntPtr url)
         {
             _urlChanged?.Invoke(this, new UrlChangedEventArgs
             {
@@ -431,7 +432,7 @@ namespace WpfMiniBlink
             }
         }
 
-        protected virtual byte OnNavigateBefore(IntPtr mb, IntPtr param, wkeNavigationType type, IntPtr url)
+        private byte OnNavigateBefore(IntPtr mb, IntPtr param, wkeNavigationType type, IntPtr url)
         {
             if (_navigateBefore == null)
                 return 1;
@@ -468,9 +469,9 @@ namespace WpfMiniBlink
             return (byte)(e.Cancel ? 0 : 1);
         }
 
-        protected virtual void OnNavigateBefore(NavigateEventArgs args)
+        private void OnNavigateBefore(NavigateEventArgs args)
         {
-            if(_navigateBefore!=null)
+            if (_navigateBefore != null)
                 _navigateBefore(this, args);
         }
 
@@ -499,7 +500,7 @@ namespace WpfMiniBlink
         /// <param name="mb"></param>
         /// <param name="param"></param>
         /// <param name="frameId"></param>
-        protected virtual void OnDocumentReady(IntPtr mb, IntPtr param, IntPtr frameId)
+        private void OnDocumentReady(IntPtr mb, IntPtr param, IntPtr frameId)
         {
             _documentReady?.Invoke(this, new DocumentReadyEventArgs
             {
@@ -533,7 +534,7 @@ namespace WpfMiniBlink
             }
         }
 
-        protected virtual void OnConsoleMessage(IntPtr mb, IntPtr param, wkeConsoleLevel level, IntPtr message,
+        private void OnConsoleMessage(IntPtr mb, IntPtr param, wkeConsoleLevel level, IntPtr message,
             IntPtr sourceName, uint sourceLine, IntPtr stackTrace)
         {
             _consoleMessage?.Invoke(this, new ConsoleMessageEventArgs
@@ -572,7 +573,7 @@ namespace WpfMiniBlink
             }
         }
 
-        protected virtual bool OnNetResponse(IntPtr mb, IntPtr param, string url, IntPtr job)
+        private bool OnNetResponse(IntPtr mb, IntPtr param, string url, IntPtr job)
         {
             if (_netResponse == null)
                 return true;
@@ -639,26 +640,26 @@ namespace WpfMiniBlink
 
         public event EventHandler<AlertEventArgs> AlertBefore;
 
-        protected virtual void OnAlertBefore(AlertEventArgs e)
+        private void OnAlertBefore(AlertEventArgs e)
         {
             AlertBefore?.Invoke(this, e);
         }
 
         public event EventHandler<ConfirmEventArgs> ConfirmBefore;
 
-        protected virtual void OnConfirmBefore(ConfirmEventArgs e)
+        private void OnConfirmBefore(ConfirmEventArgs e)
         {
             ConfirmBefore?.Invoke(this, e);
         }
 
         public event EventHandler<PromptEventArgs> PromptBefore;
 
-        protected virtual void OnPromptBefore(PromptEventArgs e)
+        private void OnPromptBefore(PromptEventArgs e)
         {
             PromptBefore?.Invoke(this, e);
         }
 
-        protected virtual byte OnDownload(IntPtr mb, IntPtr param, IntPtr url)
+        private byte OnDownload(IntPtr mb, IntPtr param, IntPtr url)
         {
             var e = new DownloadEventArgs
             {
@@ -680,7 +681,7 @@ namespace WpfMiniBlink
         /// <param name="y"></param>
         /// <param name="w"></param>
         /// <param name="h"></param>
-        protected virtual void OnPaintUpdated(IntPtr mb, IntPtr param, IntPtr hdc, int x, int y, int w, int h)
+        private void OnPaintUpdated(IntPtr mb, IntPtr param, IntPtr hdc, int x, int y, int w, int h)
         {
             var e = new PaintUpdatedEventArgs
             {
@@ -738,7 +739,7 @@ namespace WpfMiniBlink
             }
         }
 
-        protected virtual bool OnLoadUrlBegin(IntPtr mb, IntPtr param, IntPtr url, IntPtr job)
+        private bool OnLoadUrlBegin(IntPtr mb, IntPtr param, IntPtr url, IntPtr job)
         {
             if (_loadUrlBegin == null)
                 return false;
@@ -796,7 +797,7 @@ namespace WpfMiniBlink
             OnLoadUrlEnd(mb, job, data);
         }
 
-        protected virtual bool OnLoadUrlEnd(IntPtr mb, IntPtr job, byte[] data = null)
+        private bool OnLoadUrlEnd(IntPtr mb, IntPtr job, byte[] data = null)
         {
             var begin = LoadUrlBeginEventArgs.GetByJob(job);
             if (begin != null)
@@ -1025,7 +1026,7 @@ namespace WpfMiniBlink
         /// <summary>
         /// 当前浏览器的路径
         /// </summary>
-        private static string nowbrowserId = Guid.NewGuid().ToString().Replace("-", "");
+        private static readonly string nowbrowserId = Guid.NewGuid().ToString().Replace("-", "");
 
         public MiniblinkBrowser()
         {
@@ -1045,34 +1046,22 @@ namespace WpfMiniBlink
                       new System.Windows.FrameworkPropertyMetadata(typeof(MiniblinkBrowser)));
                 }
             }
-            ViewImage = new System.Windows.Controls.Image();
-
-            ViewImage.Stretch = Stretch.None;
-
+            ViewImage = new System.Windows.Controls.Image { Stretch = Stretch.None };
             this.Child = ViewImage;
             this.ViewImage.SetBinding(System.Windows.Controls.Image.SourceProperty, "WriteBitMap");
-
             this.DataContext = this;
-
-
-            InvokeBro = InvokeBro ?? this;
+            InvokeBro ??= this;
             LoadResourceHandlerList = new List<ILoadResource>();
-
             if (!Utils.IsDesignMode())
             {
                 if (MBApi.wkeIsInitialize() == false)
                 {
                     MBApi.wkeInitialize();
                 }
-
-
                 /*
                  设置基础信息
                 nowbrowserId
                  */
-
-
-
                 MiniblinkHandle = MBApi.wkeCreateWebView();
 
                 if (MiniblinkHandle == IntPtr.Zero)
@@ -1086,9 +1075,9 @@ namespace WpfMiniBlink
                 {
                     System.IO.Directory.CreateDirectory(nowPath);
                 }
-                MBApi.wkeSetCookieJarFullPath(MiniblinkHandle, nowPath+ "\\cookies.dat");
+                MBApi.wkeSetCookieJarFullPath(MiniblinkHandle, nowPath + "\\cookies.dat");
                 // var file = System.Environment.CurrentDirectory + "\\" + nowbrowserId + "\\cookies.dat";
-             //   nowPath = $"{System.Environment.CurrentDirectory}\\temp\\{nowbrowserId}";
+                //   nowPath = $"{System.Environment.CurrentDirectory}\\temp\\{nowbrowserId}";
                 MBApi.wkeSetLocalStorageFullPath(MiniblinkHandle, nowPath);
 
                 MBApi.wkeSetDragEnable(MiniblinkHandle, false);
@@ -1098,7 +1087,7 @@ namespace WpfMiniBlink
 
                 titleChangeCallback = OnTitleChangedCallback;
                 MBApi.wkeOnTitleChanged(MiniblinkHandle, titleChangeCallback, IntPtr.Zero);
-                
+
                 titleChangeCallback2 = OnTitleChangedCallback2;
 
                 //设置鼠标
@@ -1107,7 +1096,7 @@ namespace WpfMiniBlink
                 _wkeCreateViewCallback = OnCreateView;
 
                 MBApi.wkeOnCreateView(MiniblinkHandle, _wkeCreateViewCallback, IntPtr.Zero);
-                
+
                 _browserPaintUpdated += BrowserPaintUpdated;
 
                 var wkePaintUpdated = new wkePaintUpdatedCallback(OnPaintUpdated);
@@ -1606,7 +1595,7 @@ namespace WpfMiniBlink
 
             MBApi.wkePerformCookieCommand(MiniblinkHandle, wkeCookieCommand.FlushCookiesToFile);
             //var host = new Uri(Url).Host.ToLower();
-            var cookies =new StringBuilder();
+            var cookies = new StringBuilder();
             var rows = File.ReadAllLines(file, Encoding.UTF8);
 
             List<string> keys = new List<string>();
@@ -1638,7 +1627,7 @@ namespace WpfMiniBlink
         public string GetCookiesString()
         {
             var file = System.Environment.CurrentDirectory + "\\temp\\" + nowbrowserId + "\\cookies.dat";
-           // var file = "cookies.dat";
+            // var file = "cookies.dat";
 
             if (File.Exists(file) == false)
             {
@@ -1775,7 +1764,7 @@ namespace WpfMiniBlink
                 flags = flags | (uint)wkeMouseFlags.WKE_RBUTTON;
             }
 
-            
+
 
             //判断键盘按键
             if (Keyboard.Modifiers == ModifierKeys.Control)
@@ -2078,7 +2067,7 @@ namespace WpfMiniBlink
                     _ref[item.Name] = jsnav;
                 }
             }
-        } 
+        }
         #endregion
     }
 }
