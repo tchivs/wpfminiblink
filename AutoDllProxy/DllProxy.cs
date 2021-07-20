@@ -122,12 +122,12 @@ namespace AutoDllProxy
             {
                 throw new NotSupportedException(Resx.unsupported_Property.Format(method));
             }
-
-            if (method.IsTaskReturn() == false)
-            {
-                var message = Resx.unsupported_ReturnType.Format(method);
-                throw new NotSupportedException(message);
-            }
+            //
+            // if (method.IsTaskReturn() == false)
+            // {
+            //     var message = Resx.unsupported_ReturnType.Format(method);
+            //     throw new NotSupportedException(message);
+            // }
 
             foreach (var parameter in method.GetParameters())
             {
@@ -157,9 +157,8 @@ namespace AutoDllProxy
             {
                 return false;
             }
-
             var taskType = method.ReturnType.GetGenericTypeDefinition();
-            return taskType == typeof(ITask<>);
+            return taskType == typeof(Task<>);
         }
     }
 }

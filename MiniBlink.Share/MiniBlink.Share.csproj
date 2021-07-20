@@ -5,4 +5,8 @@
     <RootNamespace>MiniBlink</RootNamespace>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\AutoDllProxy\AutoDllProxy.csproj" />
+  </ItemGroup>
+
 </Project>

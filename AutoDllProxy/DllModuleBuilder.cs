@@ -55,13 +55,25 @@ namespace AutoDllProxy
             //实现接口
             builder.AddInterfaceImplementation(interfaceType);
             BuildMethods(builder);
+            module.CreateGlobalFunctions();
 
             var proxyType = builder.CreateType();
+            //    var m=  proxyType.GetMethod("wkeInitialize");
+            //  var rrr=  m.Invoke(null, null);
+            // var succe= proxyType.GetMethod("wkeIsInitialize").Invoke(null,null);
             return (TModule) Activator.CreateInstance(proxyType);
         }
 
         private void BuildMethods(TypeBuilder builder)
         {
+            const MethodAttributes implementAttribute = MethodAttributes.Public | MethodAttributes.Virtual |
+                                                        MethodAttributes.Final | MethodAttributes.NewSlot |
+                                                        MethodAttributes.HideBySig;
+            const MethodAttributes pInvokeAttribute = MethodAttributes.Family | MethodAttributes.FamANDAssem |
+                                                      MethodAttributes.Final | MethodAttributes.Public |
+                                                      MethodAttributes.PinvokeImpl |
+                                                      MethodAttributes.Static |
+                                                      MethodAttributes.HideBySig;
             var actionMethods = this.ApiMethods;
             for (int i = 0; i < actionMethods.Length; i++)
             {
@@ -71,9 +83,71 @@ namespace AutoDllProxy
                 var parameterTypes = actionParameters.Select(p => p.ParameterType).ToArray();
                 var dll = Is64() ? this.DllX64Name : DllName;
                 var name = importAttribute.ExactSpelling ? actionMethod.Name : importAttribute.EntryPoint;
-                builder.DefinePInvokeMethod(name, dll, MethodAttributes.Public, CallingConventions.Standard,
+                var pInvokeMethod = builder.DefinePInvokeMethod(name, dll,
+                    pInvokeAttribute,
+                    CallingConventions.Standard,
                     actionMethod.ReturnType, parameterTypes, importAttribute.CallingConvention,
                     importAttribute.CharSet);
+                //  pInvokeMethod.SetImplementationFlags(MethodImplAttributes.PreserveSig);
+                pInvokeMethod.SetImplementationFlags(
+                    pInvokeMethod.GetMethodImplementationFlags() | MethodImplAttributes.PreserveSig);
+
+                //创建代理方法
+                var proxyMethod = builder.DefineMethod($"{actionMethod.Name}", implementAttribute,
+                    CallingConventions.Standard,
+                    actionMethod.ReturnType, parameterTypes);
+                var iL = proxyMethod.GetILGenerator();
+                
+                iL.Emit(OpCodes.Call, pInvokeMethod);
+                 
+                // if (actionMethod.ReturnType != typeof(void))
+                // {
+                //     //设置返回值
+                //     iL.Emit(OpCodes.Castclass, actionMethod.ReturnType);
+                // }
+                // else
+                // {
+                //     //   iL.Emit(OpCodes.Pop);
+                // }
+
+                iL.Emit(OpCodes.Ret);
+
+
+                //
+                // var arguments = iL.DeclareLocal(typeof(object[]));
+                // iL.Emit(OpCodes.Ldc_I4, actionParameters.Length);
+                // iL.Emit(OpCodes.Newarr, typeof(object));
+                // iL.Emit(OpCodes.Stloc, arguments);
+                //
+                // for (var j = 0; j < actionParameters.Length; j++)
+                // {
+                //     iL.Emit(OpCodes.Ldloc, arguments);
+                //     iL.Emit(OpCodes.Ldc_I4, j);
+                //     iL.Emit(OpCodes.Ldarg, j + 1);
+                //
+                //     var parameterType = parameterTypes[j];
+                //     if (parameterType.IsValueType || parameterType.IsGenericParameter)
+                //     {
+                //         iL.Emit(OpCodes.Box, parameterType);
+                //     }
+                //
+                //     iL.Emit(OpCodes.Stelem_Ref);
+                // }
+                //
+                // // 加载arguments参数
+                // iL.Emit(OpCodes.Ldloc, arguments);
+                // iL.Emit(OpCodes.Callvirt, pInvokeMethod);
+                //
+                // if (actionMethod.ReturnType == typeof(void))
+                // {
+                //     iL.Emit(OpCodes.Pop);
+                // }
+                // iL.Emit(OpCodes.Castclass, actionMethod.ReturnType);
+                // iL.Emit(OpCodes.Ret);
+
+                builder.DefineMethodOverride(proxyMethod, actionMethod);
+                // methodBuilder.SetImplementationFlags(
+                //     methodBuilder.GetMethodImplementationFlags() | MethodImplAttributes.PreserveSig);
             }
         }
 
