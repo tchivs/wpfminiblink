@@ -20,4 +20,16 @@ namespace AutoDllProxy.Attributes
             this.NameX64 = nameX64;
         }
     }
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public class MapAttribute : Attribute
+    {
+        public string Name { get; set; }
+        public bool IsRef { get; set; }
+        public bool IsRet { get; set; }
+    }
+    [AttributeUsage(AttributeTargets.Property | AttributeTargets.Field)]
+    public class MapIgnoreAttribute : Attribute
+    {
+
+    }
 }

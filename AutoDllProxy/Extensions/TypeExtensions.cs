@@ -15,7 +15,7 @@ namespace AutoDllProxy
         /// <summary>
         /// 类型的默认值缓存
         /// </summary>
-        private static readonly ConcurrentDictionary<Type, object?> defaultValueCache = new ConcurrentDictionary<Type, object?>();
+        private static readonly ConcurrentDictionary<Type, object> defaultValueCache = new ConcurrentDictionary<Type, object>();
 
         /// <summary>
         /// 关联的AttributeUsageAttribute是否AllowMultiple
@@ -32,7 +32,7 @@ namespace AutoDllProxy
         /// </summary>
         /// <param name="type"></param>
         /// <returns></returns>
-        public static object? DefaultValue(this Type? type)
+        public static object DefaultValue(this Type type)
         {
             return type == null ? null : defaultValueCache.GetOrAdd(type, t =>
             {
@@ -61,7 +61,7 @@ namespace AutoDllProxy
         /// <param name="args">参数值</param>
         /// <exception cref="TypeInstanceCreateException"></exception>
         /// <returns></returns>
-        public static T CreateInstance<T>(this Type type, params object?[] args)
+        public static T CreateInstance<T>(this Type type, params object[] args)
         {
             var instance = Activator.CreateInstance(type, args);
             if (instance == null)

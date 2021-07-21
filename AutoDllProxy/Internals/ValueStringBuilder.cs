@@ -9,7 +9,7 @@ namespace AutoDllProxy.Internals
     public ref struct ValueStringBuilder
     {
         private int index;
-        private char[]? array;
+        private char[] array;
         private Span<char> chars;
 
         /// <summary>

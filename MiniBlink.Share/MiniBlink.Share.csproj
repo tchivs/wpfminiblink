@@ -1,8 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <RootNamespace>MiniBlink</RootNamespace>
+    <RootNamespace>MiniBlink.Share.Share</RootNamespace>
+	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+	  <TargetFrameworks>net472;netstandard2.1</TargetFrameworks>
+
   </PropertyGroup>
 
   <ItemGroup>

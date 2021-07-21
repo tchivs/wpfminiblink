@@ -52,7 +52,7 @@ namespace Miniblink
         IntPtr sourceName, uint sourceLine, IntPtr stackTrace);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    internal delegate bool wkeLoadUrlBeginCallback(IntPtr webView, IntPtr param, IntPtr url, IntPtr job);
+    public delegate bool wkeLoadUrlBeginCallback(IntPtr webView, IntPtr param, IntPtr url, IntPtr job);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     internal delegate void wkeLoadUrlEndCallback(IntPtr webView, IntPtr param, IntPtr url, IntPtr job, IntPtr buf,

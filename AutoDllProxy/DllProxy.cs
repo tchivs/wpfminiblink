@@ -2,8 +2,6 @@ using System;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using AutoDllProxy.Internals;
-
 namespace AutoDllProxy
 {
     /// <summary>
@@ -11,78 +9,6 @@ namespace AutoDllProxy
     /// </summary>
     public static class DllProxy
     {
-        /// <summary>
-        /// 获取接口的名称
-        /// 该名称可用于接口对应的OptionsName
-        /// </summary>
-        /// <param name="httpApiType">接口类型</param>
-        /// <returns></returns>
-        public static string GetName(Type? httpApiType)
-        {
-            return GetName(httpApiType, includeNamespace: true);
-        }
-
-        /// <summary>
-        /// 获取接口的名称 
-        /// </summary>
-        /// <param name="httpApiType">接口类型</param>
-        /// <param name="includeNamespace">是否包含命名空间</param>
-        /// <returns></returns>
-        public static string GetName(Type? httpApiType, bool includeNamespace)
-        {
-            if (httpApiType == null)
-            {
-                return string.Empty;
-            }
-
-            var builder = new ValueStringBuilder(stackalloc char[256]);
-            if (includeNamespace == true)
-            {
-                builder.Append(httpApiType.Namespace).Append(".");
-            }
-
-            GetName(httpApiType, ref builder);
-            return builder.ToString();
-        }
-
-
-        /// <summary>
-        /// 获取类型的短名称
-        /// </summary>
-        /// <param name="type">类型</param>
-        /// <param name="builder"></param>
-        /// <returns></returns>
-        private static void GetName(Type type, ref ValueStringBuilder builder)
-        {
-            if (type.IsGenericType == false)
-            {
-                builder.Append(type.Name);
-                return;
-            }
-
-            var name = type.Name.AsSpan();
-            var index = name.LastIndexOf('`');
-            if (index > -1)
-            {
-                name = name.Slice(0, index);
-            }
-            builder.Append(name);
-            builder.Append('<');
-
-            var i = 0;
-            var arguments = type.GetGenericArguments();
-            foreach (var argument in arguments)
-            {
-                GetName(argument, ref builder);
-                if (++i < arguments.Length)
-                {
-                    builder.Append(',');
-                }
-            }
-            builder.Append('>');
-        }
-
-
         /// <summary>
         /// 查找接口类型及其继承的接口的所有方法
         /// </summary>
@@ -129,14 +55,14 @@ namespace AutoDllProxy
             //     throw new NotSupportedException(message);
             // }
 
-            foreach (var parameter in method.GetParameters())
-            {
-                if (parameter.ParameterType.IsByRef == true)
-                {
-                    var message = Resx.unsupported_ByRef.Format(parameter);
-                    throw new NotSupportedException(message);
-                }
-            }
+            // foreach (var parameter in method.GetParameters())
+            // {
+            //     if (parameter.ParameterType.IsByRef == true)
+            //     {
+            //         var message = Resx.unsupported_ByRef.Format(parameter);
+            //         throw new NotSupportedException(message);
+            //     }
+            // }
 
             return method;
         }
@@ -146,7 +72,7 @@ namespace AutoDllProxy
         /// </summary>
         /// <param name="method"></param>
         /// <returns></returns>
-        private static bool IsTaskReturn(this MethodInfo method)
+        public static bool IsTaskReturn(this MethodInfo method)
         {
             if (method.ReturnType.IsInheritFrom<Task>())
             {

@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace Miniblink
 {
+   
     public class MBApi2
     {
 
@@ -17,6 +20,21 @@ namespace Miniblink
             return IntPtr.Size == 8;
         }
 
+        [DllImport(DLL_x86, EntryPoint = "wkeGetString", CallingConvention = CallingConvention.Cdecl)]
+        private static extern string wkeGetString_x86(IntPtr wkeString);
+        [DllImport(DLL_x64, EntryPoint = "wkeGetString", CallingConvention = CallingConvention.Cdecl)]
+        [return: MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Utf8Marshal))]
+        private static extern string wkeGetString_x64(IntPtr wkeString);
+
+        public static string wkeGetString(IntPtr wkeString)
+        {
+            if (is64())
+            {
+                return wkeGetString_x64(wkeString);
+            }
+
+            return wkeGetString_x86(wkeString);
+        }
         [DllImport(DLL_x86, EntryPoint = "wkeIsInitialize", CallingConvention = CallingConvention.Cdecl)]
         private static extern bool wkeIsInitialize_x86();
         [DllImport(DLL_x64, EntryPoint = "wkeIsInitialize", CallingConvention = CallingConvention.Cdecl)]
@@ -28,7 +46,22 @@ namespace Miniblink
 
             return wkeIsInitialize_x64();
         }
+        [DllImport(DLL_x86, EntryPoint = "wkeOnLoadUrlBegin", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void wkeOnLoadUrlBegin_x86(IntPtr webView, wkeLoadUrlBeginCallback callback, IntPtr param);
+        [DllImport(DLL_x64, EntryPoint = "wkeOnLoadUrlBegin", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void wkeOnLoadUrlBegin_x64(IntPtr webView, wkeLoadUrlBeginCallback callback, IntPtr param);
 
+        public static void wkeOnLoadUrlBegin(IntPtr webView, wkeLoadUrlBeginCallback callback, IntPtr param)
+        {
+            if (is64())
+            {
+                wkeOnLoadUrlBegin_x64(webView, callback, param);
+            }
+            else
+            {
+                wkeOnLoadUrlBegin_x86(webView, callback, param);
+            }
+        }
         [DllImport(DLL_x86, EntryPoint = "wkeInitialize", CallingConvention = CallingConvention.Cdecl)]
         public static extern void wkeInitialize_x86();
         [DllImport(DLL_x64, EntryPoint = "wkeInitialize", CallingConvention = CallingConvention.Cdecl)]
@@ -121,7 +154,7 @@ namespace Miniblink
         {
           
 
-            return wkeCreateWebView_x86();
+            return wkeCreateWebView_x64();
         }
 
         //[DllImport(DLL_x86, EntryPoint = "wkeGetWebView", CallingConvention = CallingConvention.Cdecl,
@@ -143,7 +176,7 @@ namespace Miniblink
         public static void wkeOnTitleChanged(IntPtr webView, TitleChangedCallback callback, IntPtr callbackParam)
         {
             
-                wkeOnTitleChanged_x86(webView, callback, callbackParam);
+                wkeOnTitleChanged_x64(webView, callback, callbackParam);
             
         }
 
@@ -455,6 +488,38 @@ namespace Miniblink
             }
         }
 
+        [DllImport(DLL_x86, EntryPoint = "wkeLoadURL", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern void wkeLoadURL_x86(IntPtr webView, string url);
+
+        [DllImport(DLL_x64, EntryPoint = "wkeLoadURL", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern void wkeLoadURL_x64(IntPtr webView, string url);
+
+        public static void wkeLoadURL(IntPtr webView, string url)
+        {
+            if (is64())
+            {
+                wkeLoadURL_x64(webView, url);
+            }
+            else
+            {
+                wkeLoadURL_x86(webView, url);
+            }
+        }
+
+        [DllImport(DLL_x86, EntryPoint = "wkeGetUserAgent", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr wkeGetUserAgent_x86(IntPtr webView);
+
+        [DllImport(DLL_x64, EntryPoint = "wkeGetUserAgent", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        private static extern IntPtr wkeGetUserAgent_x64(IntPtr webView);
+
+        public static IntPtr wkeGetUserAgent(IntPtr webView)
+        {
+            return is64() ? wkeGetUserAgent_x64(webView) : wkeGetUserAgent_x86(webView);
+        }
         [DllImport(DLL_x86, EntryPoint = "wkeNetCancelRequest", CallingConvention = CallingConvention.Cdecl)]
         private static extern void wkeNetCancelRequest_x86(IntPtr job);
         [DllImport(DLL_x64, EntryPoint = "wkeNetCancelRequest", CallingConvention = CallingConvention.Cdecl)]
@@ -505,6 +570,56 @@ namespace Miniblink
                 data.Add(ch);
             }
             return System.Text.Encoding.UTF8.GetString(data.ToArray());
+        }
+    }
+
+    internal class Utf8Marshal: ICustomMarshaler
+    {
+        public static Utf8Marshal Instance = new Utf8Marshal(); public static ICustomMarshaler GetInstance(string cookie)
+        {
+            return Instance;
+        }
+        public void CleanUpManagedData(object ManagedObj)
+        {
+         }
+
+        public void CleanUpNativeData(IntPtr pNativeData)
+        {
+            //对于const utf8应交由miniblink内部回收
+        }
+
+        public int GetNativeDataSize()
+        {
+            return -1;
+        }
+
+        public IntPtr MarshalManagedToNative(object ManagedObj)
+        {
+            if (ManagedObj is string str)
+            {
+                var data = Encoding.UTF8.GetBytes(str);
+                IntPtr handle = Marshal.AllocHGlobal(data.Length + 1);
+                Marshal.Copy(data, 0, handle, data.Length);
+                Marshal.WriteByte(handle, data.Length, 0);
+                return handle;
+            }
+            throw new InvalidOperationException();
+        }
+
+        public object MarshalNativeToManaged(IntPtr ptr)
+        {
+            var data = new List<byte>();
+            var off = 0;
+            while (true)
+            {
+                var ch = Marshal.ReadByte(ptr, off++);
+                if (ch == 0)
+                {
+                    break;
+                }
+                data.Add(ch);
+            }
+            return Encoding.UTF8.GetString(data.ToArray());
         }
     }
 }

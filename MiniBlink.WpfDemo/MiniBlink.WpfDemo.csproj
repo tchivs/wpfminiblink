@@ -2,9 +2,13 @@
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net5.0-windows</TargetFramework>
         <UseWPF>true</UseWPF>
+        <TargetFrameworks>net472;net5.0-windows</TargetFrameworks>
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="NUnit" Version="3.13.2" />
+    </ItemGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\MiniBlink.Share\MiniBlink.Share.csproj" />

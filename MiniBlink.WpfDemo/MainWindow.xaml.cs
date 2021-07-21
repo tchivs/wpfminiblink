@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -13,7 +14,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using AutoDllProxy;
-using Miniblink;
+using MiniBlink.Share;
 
 namespace MiniBlink.WpfDemo
 {
@@ -25,12 +26,39 @@ namespace MiniBlink.WpfDemo
         public MainWindow()
         {
             InitializeComponent();
-             var api =  DllModuleBuilder.Create().Build<IMiniBlink>();
-              api.Initialize();
-           var r=   api.IsInitialize();
-         var v= api.GetVersion();
-          //    MBApi2.wkeInitialize();
-          // var r2 = MBApi2.wkeIsInitialize();
+           
         }
+        
+        // private void TitleChanged(IntPtr webview, IntPtr param, IntPtr title)
+        // {
+        //     
+        //         var t= title.WKEToUTF8String();
+        //     
+        // }
     }
+
+    // public static class Exts
+    // {
+    //     public static string WKEToUTF8String(this IntPtr ptr)
+    //     {
+    //         return MBApi2.wkeGetString(ptr);
+    //     }
+    //     public static string ToUTF8String(this IntPtr ptr)
+    //     {
+    //         var data = new List<byte>();
+    //         var off = 0;
+    //         while (true)
+    //         {
+    //             var ch = Marshal.ReadByte(ptr, off++);
+    //             if (ch == 0)
+    //             {
+    //                 break;
+    //             }
+    //             data.Add(ch);
+    //         }
+    //         return Encoding.UTF8.GetString(data.ToArray());
+    //     }
+    //
+    // }
+
 }

@@ -7,7 +7,8 @@ namespace AutoDllProxy
         public static DllModuleBuilder SetDllName(this DllModuleBuilder builder, string name, string x64Name = null)
         {
             builder.DllName = name;
-            builder.DllX64Name ??= x64Name;
+            
+            builder.DllX64Name = x64Name;
             return builder;
         }
     }

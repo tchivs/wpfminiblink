@@ -5,83 +5,9 @@ using System.Runtime.InteropServices;
 using System.Reflection.Emit;
 using System.Threading.Tasks;
 using AutoDllProxy;
-using AutoDllProxy.Attributes;
 
-namespace MiniBlink
+namespace MiniBlink.Share
 {
-   [Dll("node_x86.dll", "node_x64.dll")]
-    public interface IMiniBlink
-    {
-        /// <summary>
-        /// 初始化
-        /// </summary>
-       [Import(EntryPoint = "wkeInitialize",CallingConvention = CallingConvention.Cdecl)] 
-        void Initialize();
-        /// <summary>
-        /// webView是否已初始化。
-        /// </summary>
-        /// <returns></returns>
-        [Import(EntryPoint = "wkeIsInitialize",CallingConvention = CallingConvention.Cdecl)]
-        bool IsInitialize();
-        /// <summary>
-        /// 使用指定参数初始化
-        /// </summary>
-        /// <returns></returns>
-        [Import(EntryPoint = "InitializeEx",CallingConvention = CallingConvention.Cdecl)] 
-        Task InitializeEx(wkeSettings settings);
-        /// <summary>
-        /// 设置一些配置项
-        /// </summary>
-        /// <param name="settings"></param>
-        [Import( EntryPoint = "wkeConfigure", CallingConvention = CallingConvention.Cdecl)]
-        Task Configure(wkeSettings settings);
-        /// <summary>
-        /// 强制停止MB，一般用于开发调试。
-        /// </summary>
-        [Import( EntryPoint = "wkeShutdownForDebug", CallingConvention = CallingConvention.Cdecl)]
-        Task ShutdownForDebug();
-        /// <summary>
-        /// 设置一些实验性选项，debugString目前支持：
-        /// showDevTools：开启开发者工具，此时param要填写开发者工具的资源路径，如file:///c:/miniblink-release/front_end/inspector.html，必须是全路径，并且不能有中文。
-        /// wakeMinInterval：设置帧率，默认值是10，值越大帧率越低。
-        /// drawMinInterval：设置帧率，默认值是3，值越大帧率越低。
-        /// antiAlias：设置抗锯齿渲染，param必须设置为“1”。
-        /// minimumFontSize：最小字体。
-        /// minimumLogicalFontSize：最小逻辑字体。
-        /// defaultFontSize：默认字号。
-        /// defaultFixedFontSize：默认Fixed字号。
-        /// imageEnable：是否打开无图模式，param为“0”表示开启无图模式。
-        /// jsEnable：是否禁用js，param为“0”表示禁用。
-        /// </summary>
-        /// <param name="webView"></param>
-        /// <param name="debugString"></param>
-        /// <param name="param"></param>
-        [Import( EntryPoint = "wkeSetDebugConfig", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        Task SetDebugConfig(IntPtr webView, string debugString, [MarshalAs(UnmanagedType.LPArray)]byte[] param);
-        /// <summary>
-        /// 获取调试选项，参看SetDebugConfig。
-        /// </summary>
-        /// <param name="webView"></param>
-        /// <param name="debugString"></param>
-        /// <returns></returns>
-        // [Import( EntryPoint = "wkeGetDebugConfig", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        //  IntPtr GetDebugConfig(IntPtr webView, string debugString);
-        /// <summary>
-        /// 获取MB的内部版本号。
-        /// </summary>
-        /// <returns></returns>
-         [Import( EntryPoint = "wkeGetVersion", CallingConvention = CallingConvention.Cdecl)]
-         uint GetVersion();
-            /// <summary>
-            /// 获取MB的发行版本号。
-            /// </summary>
-            /// <returns></returns>
-        // [Import( EntryPoint = "wkeGetVersionString", CallingConvention = CallingConvention.Cdecl)]
-        //     string GetVersionString();
-    }
-   
-     
-    
     #region 定义委托
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
@@ -94,10 +20,12 @@ namespace MiniBlink
     public delegate void wkeURLChangedCallback2(IntPtr webView, IntPtr param, IntPtr frame, IntPtr url);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkePaintUpdatedCallback(IntPtr webView, IntPtr param, IntPtr buffer, int x, int y, int cx, int cy);
+    public delegate void wkePaintUpdatedCallback(IntPtr webView, IntPtr param, IntPtr buffer, int x, int y, int cx,
+        int cy);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkePaintBitUpdatedCallback(IntPtr webView, IntPtr param, IntPtr hdc, ref wkeRect r, int width, int height);
+    public delegate void wkePaintBitUpdatedCallback(IntPtr webView, IntPtr param, IntPtr hdc, ref wkeRect r, int width,
+        int height);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void wkeAlertBoxCallback(IntPtr webView, IntPtr param, IntPtr msg);
@@ -106,13 +34,16 @@ namespace MiniBlink
     public delegate byte wkeConfirmBoxCallback(IntPtr webView, IntPtr param, IntPtr msg);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate byte wkePromptBoxCallback(IntPtr webView, IntPtr param, IntPtr msg, IntPtr defaultResult, IntPtr result);
+    public delegate byte wkePromptBoxCallback(IntPtr webView, IntPtr param, IntPtr msg, IntPtr defaultResult,
+        IntPtr result);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate byte wkeNavigationCallback(IntPtr webView, IntPtr param, wkeNavigationType navigationType, IntPtr url);
+    public delegate byte wkeNavigationCallback(IntPtr webView, IntPtr param, wkeNavigationType navigationType,
+        IntPtr url);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate IntPtr wkeCreateViewCallback(IntPtr webView, IntPtr param, wkeNavigationType navigationType, IntPtr url, IntPtr windowFeatures);
+    public delegate IntPtr wkeCreateViewCallback(IntPtr webView, IntPtr param, wkeNavigationType navigationType,
+        IntPtr url, IntPtr windowFeatures);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void wkeDocumentReadyCallback(IntPtr webView, IntPtr param);
@@ -121,31 +52,37 @@ namespace MiniBlink
     public delegate void wkeDocumentReady2Callback(IntPtr webView, IntPtr param, IntPtr frame);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkeLoadingFinishCallback(IntPtr webView, IntPtr param, IntPtr url, wkeLoadingResult result, IntPtr failedReason);
+    public delegate void wkeLoadingFinishCallback(IntPtr webView, IntPtr param, IntPtr url, wkeLoadingResult result,
+        IntPtr failedReason);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate byte wkeDownloadCallback(IntPtr webView, IntPtr param, IntPtr url);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate byte wkeDownload2Callback(IntPtr webView, IntPtr param, uint expectedContentLength, IntPtr url, IntPtr mime, IntPtr disposition, IntPtr job, IntPtr dataBind);
+    public delegate byte wkeDownload2Callback(IntPtr webView, IntPtr param, uint expectedContentLength, IntPtr url,
+        IntPtr mime, IntPtr disposition, IntPtr job, IntPtr dataBind);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkeConsoleCallback(IntPtr webView, IntPtr param, wkeConsoleLevel level, IntPtr message, IntPtr sourceName, uint sourceLine, IntPtr stackTrace);
+    public delegate void wkeConsoleCallback(IntPtr webView, IntPtr param, wkeConsoleLevel level, IntPtr message,
+        IntPtr sourceName, uint sourceLine, IntPtr stackTrace);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate byte wkeLoadUrlBeginCallback(IntPtr webView, IntPtr param, IntPtr url, IntPtr job);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkeLoadUrlEndCallback(IntPtr webView, IntPtr param, IntPtr url, IntPtr job, IntPtr buf, int len);
+    public delegate void wkeLoadUrlEndCallback(IntPtr webView, IntPtr param, IntPtr url, IntPtr job, IntPtr buf,
+        int len);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void wkeLoadUrlFailCallback(IntPtr webView, IntPtr param, IntPtr url, IntPtr job);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkeDidCreateScriptContextCallback(IntPtr webView, IntPtr param, IntPtr frame, IntPtr context, int extensionGroup, int worldId);
+    public delegate void wkeDidCreateScriptContextCallback(IntPtr webView, IntPtr param, IntPtr frame, IntPtr context,
+        int extensionGroup, int worldId);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkeWillReleaseScriptContextCallback(IntPtr webView, IntPtr param, IntPtr frame, IntPtr context, int worldId);
+    public delegate void wkeWillReleaseScriptContextCallback(IntPtr webView, IntPtr param, IntPtr frame, IntPtr context,
+        int worldId);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate byte wkeNetResponseCallback(IntPtr webView, IntPtr param, IntPtr url, IntPtr job);
@@ -184,19 +121,23 @@ namespace MiniBlink
     public delegate void jsFinalizeCallback(IntPtr data);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkeOnUrlRequestWillRedirectCallback(IntPtr webView, IntPtr param, IntPtr oldRequest, IntPtr request, IntPtr redirectResponse);
+    public delegate void wkeOnUrlRequestWillRedirectCallback(IntPtr webView, IntPtr param, IntPtr oldRequest,
+        IntPtr request, IntPtr redirectResponse);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkeOnUrlRequestDidReceiveResponseCallback(IntPtr webView, IntPtr param, IntPtr request, IntPtr response);
+    public delegate void wkeOnUrlRequestDidReceiveResponseCallback(IntPtr webView, IntPtr param, IntPtr request,
+        IntPtr response);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkeOnUrlRequestDidReceiveDataCallback(IntPtr webView, IntPtr param, IntPtr request, IntPtr data, int dataLength);
+    public delegate void wkeOnUrlRequestDidReceiveDataCallback(IntPtr webView, IntPtr param, IntPtr request,
+        IntPtr data, int dataLength);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void wkeOnUrlRequestDidFailCallback(IntPtr webView, IntPtr param, IntPtr request, IntPtr error);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkeOnUrlRequestDidFinishLoadingCallback(IntPtr webView, IntPtr param, IntPtr request, long finishTime);
+    public delegate void wkeOnUrlRequestDidFinishLoadingCallback(IntPtr webView, IntPtr param, IntPtr request,
+        long finishTime);
 
     /// <summary>
     /// 访问Cookie回调
@@ -209,14 +150,16 @@ namespace MiniBlink
     /// <param name="secure">安全，如果非0则仅发送到https请求</param>
     /// <param name="httpOnly">如果非0则仅发送到http请求</param>
     /// <param name="expires">过期时间 The cookie expiration date is only valid if |has_expires| is true.</param>
-    /// <returns>返回true 则应用程序自己处理miniblink不处理</returns>
+    /// <returns>返回true 则应用程序自己处理MiniBlink.Share不处理</returns>
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate bool wkeCookieVisitor(IntPtr userData, [MarshalAs(UnmanagedType.LPStr)]string name, [MarshalAs(UnmanagedType.LPStr)]string value, [MarshalAs(UnmanagedType.LPStr)]string domain, [MarshalAs(UnmanagedType.LPStr)]string path, int secure, int httpOnly, ref int expires);
+    public delegate bool wkeCookieVisitor(IntPtr userData, [MarshalAs(UnmanagedType.LPStr)] string name,
+        [MarshalAs(UnmanagedType.LPStr)] string value, [MarshalAs(UnmanagedType.LPStr)] string domain,
+        [MarshalAs(UnmanagedType.LPStr)] string path, int secure, int httpOnly, ref int expires);
 
     #endregion
 
-    
-     #region 枚举
+
+    #region 枚举
 
     public enum wkeMouseFlags
     {
@@ -226,6 +169,13 @@ namespace MiniBlink
         WKE_CONTROL = 0x08,
         WKE_MBUTTON = 0x10,
     }
+    public enum  wkeWindowType
+    {
+        WKE_WINDOW_TYPE_POPUP,
+        WKE_WINDOW_TYPE_TRANSPARENT,
+        WKE_WINDOW_TYPE_CONTROL
+    }
+    
 
     public enum wkeKeyFlags
     {
@@ -363,22 +313,22 @@ namespace MiniBlink
 
     public enum wkeResourceType
     {
-        MAIN_FRAME = 0,       // top level page
-        SUB_FRAME = 1,        // frame or iframe
-        STYLESHEET = 2,       // a CSS stylesheet
-        SCRIPT = 3,           // an external script
-        IMAGE = 4,            // an image (jpg/gif/png/etc)
-        FONT_RESOURCE = 5,    // a font
-        SUB_RESOURCE = 6,     // an "other" subresource.
-        OBJECT = 7,           // an object (or embed) tag for a plugin, or a resource that a plugin requested.
-        MEDIA = 8,            // a media resource.
-        WORKER = 9,           // the main resource of a dedicated worker.
-        SHARED_WORKER = 10,   // the main resource of a shared worker.
-        PREFETCH = 11,        // an explicitly requested prefetch
-        FAVICON = 12,         // a favicon
-        XHR = 13,             // a XMLHttpRequest
-        PING = 14,            // a ping request for <a ping>
-        SERVICE_WORKER = 15,  // the main resource of a service worker.
+        MAIN_FRAME = 0, // top level page
+        SUB_FRAME = 1, // frame or iframe
+        STYLESHEET = 2, // a CSS stylesheet
+        SCRIPT = 3, // an external script
+        IMAGE = 4, // an image (jpg/gif/png/etc)
+        FONT_RESOURCE = 5, // a font
+        SUB_RESOURCE = 6, // an "other" subresource.
+        OBJECT = 7, // an object (or embed) tag for a plugin, or a resource that a plugin requested.
+        MEDIA = 8, // a media resource.
+        WORKER = 9, // the main resource of a dedicated worker.
+        SHARED_WORKER = 10, // the main resource of a shared worker.
+        PREFETCH = 11, // an explicitly requested prefetch
+        FAVICON = 12, // a favicon
+        XHR = 13, // a XMLHttpRequest
+        PING = 14, // a ping request for <a ping>
+        SERVICE_WORKER = 15, // the main resource of a service worker.
     }
 
     public enum wkeMenuItemId
@@ -419,28 +369,22 @@ namespace MiniBlink
         [MarshalAs(UnmanagedType.ByValTStr, SizeConst = 100)]
         public string typeName;
 
-        [MarshalAs(UnmanagedType.FunctionPtr)]
-        public jsGetPropertyCallback propertyGet;
+        [MarshalAs(UnmanagedType.FunctionPtr)] public jsGetPropertyCallback propertyGet;
 
-        [MarshalAs(UnmanagedType.FunctionPtr)]
-        public jsSetPropertyCallback propertySet;
+        [MarshalAs(UnmanagedType.FunctionPtr)] public jsSetPropertyCallback propertySet;
 
-        [MarshalAs(UnmanagedType.FunctionPtr)]
-        public jsFinalizeCallback finalize;
+        [MarshalAs(UnmanagedType.FunctionPtr)] public jsFinalizeCallback finalize;
 
-        [MarshalAs(UnmanagedType.FunctionPtr)]
-        public jsCallAsFunctionCallback callAsFunction;
+        [MarshalAs(UnmanagedType.FunctionPtr)] public jsCallAsFunctionCallback callAsFunction;
     }
 
     public struct wkeNetJobDataBind
     {
         IntPtr param;
 
-        [MarshalAs(UnmanagedType.FunctionPtr)]
-        public wkeNetJobDataRecvCallback recvCallback;
+        [MarshalAs(UnmanagedType.FunctionPtr)] public wkeNetJobDataRecvCallback recvCallback;
 
-        [MarshalAs(UnmanagedType.FunctionPtr)]
-        public wkeNetJobDataFinishCallback finishCallback;
+        [MarshalAs(UnmanagedType.FunctionPtr)] public wkeNetJobDataFinishCallback finishCallback;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -484,26 +428,19 @@ namespace MiniBlink
         public int width;
         public int height;
 
-        [MarshalAs(UnmanagedType.I1)]
-        public bool menuBarVisible;
+        [MarshalAs(UnmanagedType.I1)] public bool menuBarVisible;
 
-        [MarshalAs(UnmanagedType.I1)]
-        public bool statusBarVisible;
+        [MarshalAs(UnmanagedType.I1)] public bool statusBarVisible;
 
-        [MarshalAs(UnmanagedType.I1)]
-        public bool toolBarVisible;
+        [MarshalAs(UnmanagedType.I1)] public bool toolBarVisible;
 
-        [MarshalAs(UnmanagedType.I1)]
-        public bool locationBarVisible;
+        [MarshalAs(UnmanagedType.I1)] public bool locationBarVisible;
 
-        [MarshalAs(UnmanagedType.I1)]
-        public bool scrollbarsVisible;
+        [MarshalAs(UnmanagedType.I1)] public bool scrollbarsVisible;
 
-        [MarshalAs(UnmanagedType.I1)]
-        public bool resizable;
+        [MarshalAs(UnmanagedType.I1)] public bool resizable;
 
-        [MarshalAs(UnmanagedType.I1)]
-        public bool fullscreen;
+        [MarshalAs(UnmanagedType.I1)] public bool fullscreen;
     }
 
     [StructLayout(LayoutKind.Sequential)]
