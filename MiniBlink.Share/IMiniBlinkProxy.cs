@@ -5,6 +5,11 @@ using MiniBlink.Share.Events;
 
 namespace MiniBlink.Share
 {
+    internal static class Const
+    {
+        public const string WebViewHandle = "webView";
+    }
+
     [Dll("node_x86.dll", "node_x64.dll")]
     public interface IMiniBlinkProxy
     {
@@ -69,38 +74,52 @@ namespace MiniBlink.Share
         // [Import(EntryPoint = "wkeGetDebugConfig", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         // string GetDebugConfig(IntPtr webView, string debugString);
         //
-        // /// <summary>
-        // /// 获取MB的内部版本号。
-        // /// </summary>
-        // /// <returns></returns>
-        // [Import(EntryPoint = "wkeGetVersion", CallingConvention = CallingConvention.Cdecl)]
-        // uint GetVersion();
+        /// <summary>
+        /// 获取MB的内部版本号。
+        /// </summary>
+        /// <returns></returns>
+        [Import(EntryPoint = "wkeGetVersion", CallingConvention = CallingConvention.Cdecl)]
+        uint GetVersion();
 
         /// <summary>
         /// 获取MB的发行版本号。
         /// </summary>
         /// <returns></returns>
-        [Import(EntryPoint = "wkeGetVersionString", CallingConvention = CallingConvention.Cdecl,MarshalTypeRef = typeof(Utf8Marshaler))]
+        [Import(EntryPoint = "wkeGetVersionString", CallingConvention = CallingConvention.Cdecl,
+            MarshalTypeRef = typeof(Utf8Marshaler))]
         string GetVersionString();
+
+        /// <summary>
+        /// 创建浏览器对象，需要先初始化才可以调用该方法,添加了ReturnValue则表示生成一个字段在内部实现，则其它方法可以不用传这个参数
+        /// </summary>
+        /// <returns>返回句柄用于后续操作</returns>
+        [Import(EntryPoint = "wkeCreateWebView", ReturnValue = Const.WebViewHandle,
+            CallingConvention = CallingConvention.Cdecl)]
+        IntPtr CreateWebViewEx();
 
         /// <summary>
         /// 创建浏览器对象，需要先初始化才可以调用该方法
         /// </summary>
-        /// <returns>返回句柄用于后续操作</returns>
-        [Import(EntryPoint = "wkeCreateWebView",ReturnValue="webView", CallingConvention = CallingConvention.Cdecl)]
+        /// <returns></returns>
+        [Import(EntryPoint = "wkeCreateWebView",
+            CallingConvention = CallingConvention.Cdecl)]
         IntPtr CreateWebView();
+
         /// <summary>
         /// 设置wkeWebView对应的窗口句柄，用于无头模式，如果是wkeCreateWebWindow创建的webview，则已经自带窗口句柄了。
         /// </summary>
         /// <param name="webView"></param>
         /// <param name="wndHandle"></param>
-        [Import(EntryPoint = "wkeSetHandle",Parameter="webView", CallingConvention = CallingConvention.Cdecl)]
-        void SetHandle( IntPtr wndHandle);
-/*
+        [Import(EntryPoint = "wkeSetHandle", Parameter = Const.WebViewHandle,
+            CallingConvention = CallingConvention.Cdecl)]
+        void SetHandle(IntPtr wndHandle);
+
+        [Import(EntryPoint = "wkeSetHandle",
+            CallingConvention = CallingConvention.Cdecl)]
+        void SetHandle(IntPtr webView, IntPtr wndHandle);
+
 
         #region 浏览器操作
-
-
 
         /// <summary>
         /// 设置是否支持拖拽文件到页面，默认开启。
@@ -145,6 +164,11 @@ namespace MiniBlink.Share
         [Import(EntryPoint = "wkeSetDragDropEnable", CallingConvention = CallingConvention.Cdecl)]
         void SetDragDropEnable(IntPtr webView, bool enable);
 
+        /// <summary>
+        /// 当有新页面需要打开时（如标签），是否在新窗口打开，默认是当前窗口，如开启，则会触发wkeOnCreateView回调接口。
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="enable"></param>
         [Import(EntryPoint = "wkeSetNavigationToNewWindowEnable", CallingConvention = CallingConvention.Cdecl)]
         void SetNavigationToNewWindowEnable(IntPtr webView, bool enable);
 
@@ -226,6 +250,11 @@ namespace MiniBlink.Share
         [Import(EntryPoint = "wkeLoadURL", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
         void LoadURL(IntPtr webView, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Utf8Marshaler))]
+            string url);
+
+        [Import(EntryPoint = "wkeLoadURL", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode, Parameter = Const.WebViewHandle)]
+        void LoadURL([MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Utf8Marshaler))]
             string url);
 
         [Import(EntryPoint = "wkePostURL", CallingConvention = CallingConvention.Cdecl,
@@ -325,23 +354,74 @@ namespace MiniBlink.Share
 
         #endregion
 
+        #region 字符串相关
+
+        [Import(EntryPoint = "wkeGetString", CallingConvention = CallingConvention.Cdecl,
+            MarshalTypeRef = typeof(Utf8Marshaler))]
+        string GetString(IntPtr wkeString);
+
+        #endregion
+
         #region Events
 
         [Import(EntryPoint = "wkeOnTitleChanged", CallingConvention = CallingConvention.Cdecl)]
-        void OnTitleChanged(IntPtr webView, wkeTitleChangedCallback callback,
-            IntPtr callbackParam);
+        void OnTitleChanged(IntPtr webView, wkeTitleChangedCallback callback, IntPtr callbackParam);
+
+        /// <summary>
+        /// 新建webView时触发此回调，一般配合wkeSetNavigationToNewWindowEnable开关使用
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="callback"></param>
+        /// <param name="param"></param>
+        [Import(EntryPoint = "wkeOnCreateView", CallingConvention = CallingConvention.Cdecl)]
+        void OnCreateView(IntPtr webView, wkeCreateViewCallback callback, IntPtr param);
+
+
+        /// <summary>
+        /// 页面任何区域刷新时触发此回调
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="callback"></param>
+        /// <param name="param"></param>
+        [Import(EntryPoint = "wkeOnPaintUpdated", CallingConvention = CallingConvention.Cdecl)]
+        void OnPaintUpdated(IntPtr webView, wkePaintUpdatedCallback callback, IntPtr param);
+
+
+        /// <summary>
+        /// 功能同wkeOnPaintUpdated，不同的是回调过来的是填充好像素的buffer，而不是DC。方便嵌入到游戏中做离屏渲染
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="callback"></param>
+        /// <param name="param"></param>
+        [Import(EntryPoint = "wkeOnPaintBitUpdated", CallingConvention = CallingConvention.Cdecl)]
+        void OnPaintBitUpdated(IntPtr webView, wkePaintBitUpdatedCallback callback, IntPtr param);
+
+        /// <summary>
+        /// 网页弹出alert时触发此回调
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="callback"></param>
+        /// <param name="param"></param>
+        [Import(EntryPoint = "wkeOnAlertBox", CallingConvention = CallingConvention.Cdecl)]
+        void OnAlertBox_x64(IntPtr webView, wkeAlertBoxCallback callback, IntPtr param);
+        /// <summary>
+        /// 网页弹出Confirm时触发此回调
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="callback"></param>
+        /// <param name="param"></param>
+        [Import( EntryPoint = "wkeOnConfirmBox", CallingConvention = CallingConvention.Cdecl)]
+        void OnConfirmBox_x64(IntPtr webView, wkeConfirmBoxCallback callback, IntPtr param);
+        /// <summary>
+        /// 网页弹出Prompt时触发此回调
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="callback"></param>
+        /// <param name="param"></param>
+        [Import( EntryPoint = "wkeOnPromptBox", CallingConvention = CallingConvention.Cdecl)]
+         void OnPromptBox(IntPtr webView, wkePromptBoxCallback callback, IntPtr param);
 
         #endregion
-        
-        */
-    }
-
-    public static class MiniBlinkExtensions
-    {
-        // public static void LoadUrl(this MiniBlink.Share MiniBlink.Share, string url)
-        // {
-        //     MiniBlink.Share.Instance.LoadURL(MiniBlink.Share, url);
-        // }
     }
 
     public struct MiniBlink

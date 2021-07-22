@@ -2,7 +2,6 @@
 
   <PropertyGroup>
     <RootNamespace>MiniBlink.Share.Share</RootNamespace>
-	  <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	  <TargetFrameworks>net472;netstandard2.1</TargetFrameworks>
 
   </PropertyGroup>

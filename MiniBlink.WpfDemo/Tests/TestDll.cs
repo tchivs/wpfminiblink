@@ -2,9 +2,16 @@
 using AutoDllProxy;
 using MiniBlink.Share;
 using NUnit.Framework;
+using System.Runtime.InteropServices;
 
 namespace MiniBlink.WpfDemo.Tests
 {
+    public static class Api
+    {
+        [DllImport("node_x64.dll", EntryPoint = "wkeGetVersionString", CallingConvention = CallingConvention.Cdecl)]
+        public static extern IntPtr wkeGetVersionString();
+    }
+
     [TestFixture]
     public class TestDll
     {
@@ -32,13 +39,19 @@ namespace MiniBlink.WpfDemo.Tests
         public void TestIsInitialize()
         {
             Assert.True(p.IsInitialize());
-        }  
+        }
+
         [Test]
-        public void GetVersionStringTest()
+        public void GetVersionTest()
         {
-            var v=p.GetVersionString();
-            Assert.NotNull(v);
-            Console.WriteLine(v);
+            var v = p.GetVersion();
+            Assert.True(v != 0);
+        }
+        [Test]
+        public void CreateWebViewTest()
+        {
+            var v = p.CreateWebView();
+            Assert.True(v!=IntPtr.Zero);
         }
     }
 }

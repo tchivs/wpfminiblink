@@ -62,6 +62,9 @@ namespace Miniblink
                 wkeOnLoadUrlBegin_x86(webView, callback, param);
             }
         }
+        
+        
+        
         [DllImport(DLL_x86, EntryPoint = "wkeInitialize", CallingConvention = CallingConvention.Cdecl)]
         public static extern void wkeInitialize_x86();
         [DllImport(DLL_x64, EntryPoint = "wkeInitialize", CallingConvention = CallingConvention.Cdecl)]
@@ -175,9 +178,7 @@ namespace Miniblink
 
         public static void wkeOnTitleChanged(IntPtr webView, TitleChangedCallback callback, IntPtr callbackParam)
         {
-            
                 wkeOnTitleChanged_x64(webView, callback, callbackParam);
-            
         }
 
 

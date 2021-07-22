@@ -15,6 +15,7 @@ namespace MiniBlink.WpfDemo
 {
     public class ChromeBrowser : Border, INotifyPropertyChanged, IDisposable
     {
+  
         private static readonly IMiniBlinkProxy MiniBlinkProxy;
         private static IntPtr MiniblinkHandle;
         private bool _disposedValue;

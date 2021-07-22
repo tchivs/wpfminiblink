@@ -4,9 +4,27 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:MiniBlink.WpfDemo"
-        mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        xmlns:viewModels="clr-namespace:MiniBlink.WpfDemo.ViewModels"
+        mc:Ignorable="d" x:Name="Root"
+        Title="{Binding Title}" Height="450" Width="800">
+    <Window.Resources>
+        <ResourceDictionary />
+    </Window.Resources>
+    <Window.DataContext>
+        <viewModels:MainWindowViewModel />
+    </Window.DataContext>
     <Grid>
-<Label Foreground="Brown" Background="Azure">1231232132123123</Label>
+        <StackPanel>
+            <Label>
+                <TextBlock>
+                    <Run Text="当前状态：" />
+                    <Run Text="{Binding IsInit}" />
+                </TextBlock>
+            </Label>
+            <TextBlock>
+                <Run Text="版本：" />
+                <Run Text="{Binding Version}" />
+            </TextBlock>
+        </StackPanel>
     </Grid>
 </Window>

@@ -16,6 +16,7 @@ using System.Windows.Shapes;
 using AutoDllProxy;
 using MiniBlink.Share;
 
+
 namespace MiniBlink.WpfDemo
 {
     /// <summary>
@@ -23,42 +24,12 @@ namespace MiniBlink.WpfDemo
     /// </summary>
     public partial class MainWindow : Window
     {
+        
+    
         public MainWindow()
         {
             InitializeComponent();
            
         }
-        
-        // private void TitleChanged(IntPtr webview, IntPtr param, IntPtr title)
-        // {
-        //     
-        //         var t= title.WKEToUTF8String();
-        //     
-        // }
     }
-
-    // public static class Exts
-    // {
-    //     public static string WKEToUTF8String(this IntPtr ptr)
-    //     {
-    //         return MBApi2.wkeGetString(ptr);
-    //     }
-    //     public static string ToUTF8String(this IntPtr ptr)
-    //     {
-    //         var data = new List<byte>();
-    //         var off = 0;
-    //         while (true)
-    //         {
-    //             var ch = Marshal.ReadByte(ptr, off++);
-    //             if (ch == 0)
-    //             {
-    //                 break;
-    //             }
-    //             data.Add(ch);
-    //         }
-    //         return Encoding.UTF8.GetString(data.ToArray());
-    //     }
-    //
-    // }
-
 }
