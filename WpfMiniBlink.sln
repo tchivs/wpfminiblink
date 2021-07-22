@@ -17,6 +17,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AutoDllProxy", "AutoDllProx
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniBlink.WpfDemo", "MiniBlink.WpfDemo\MiniBlink.WpfDemo.csproj", "{DCEAE60D-193A-4E70-A278-B8F0B9827975}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MiniBlink.Wpf", "MiniBlink.Wpf\MiniBlink.Wpf.csproj", "{FEB4B5AD-7D24-4960-94CF-132FD6DF9D9F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,10 @@ Global
 		{DCEAE60D-193A-4E70-A278-B8F0B9827975}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{DCEAE60D-193A-4E70-A278-B8F0B9827975}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{DCEAE60D-193A-4E70-A278-B8F0B9827975}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FEB4B5AD-7D24-4960-94CF-132FD6DF9D9F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FEB4B5AD-7D24-4960-94CF-132FD6DF9D9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FEB4B5AD-7D24-4960-94CF-132FD6DF9D9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FEB4B5AD-7D24-4960-94CF-132FD6DF9D9F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1034,7 +1034,7 @@ namespace WpfMiniBlink
 
             ViewImage = new System.Windows.Controls.Image();
 
-            ViewImage.Stretch = Stretch.None;
+            // ViewImage.Stretch = Stretch.None;
 
             this.Child = ViewImage;
             this.ViewImage.SetBinding(System.Windows.Controls.Image.SourceProperty, "WriteBitMap");

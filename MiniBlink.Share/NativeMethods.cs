@@ -20,12 +20,11 @@ namespace MiniBlink.Share
     public delegate void wkeURLChangedCallback2(IntPtr webView, IntPtr param, IntPtr frame, IntPtr url);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkePaintUpdatedCallback(IntPtr webView, IntPtr param, IntPtr buffer, int x, int y, int cx,
-        int cy);
+    public delegate void wkePaintUpdatedCallback(IntPtr webView, IntPtr param, IntPtr buffer, int x, int y, int cx, int cy);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
-    public delegate void wkePaintBitUpdatedCallback(IntPtr webView, IntPtr param, IntPtr hdc, ref wkeRect r, int width,
-        int height);
+    public delegate void wkePaintBitUpdatedCallback(IntPtr webView, IntPtr param, IntPtr hdc, ref wkeRect r, int width, int height);
+
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void wkeAlertBoxCallback(IntPtr webView, IntPtr param, IntPtr msg);

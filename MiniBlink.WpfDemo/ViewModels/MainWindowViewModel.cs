@@ -19,42 +19,7 @@ namespace MiniBlink.WpfDemo.ViewModels
         public string CookieFileName { get; set; }
         public string CurrentPath { get; set; }
         public string CacheDir { get; set; }
-        private bool _isInit;
-        private string _version;
-        private string _title;
-
-        public string Title
-        {
-            get => _title;
-            set
-            {
-                this._title = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public string Version
-        {
-            get => _version;
-            set
-            {
-                this._version = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        public bool IsInit
-        {
-            get => _isInit;
-            set
-            {
-                _isInit = value;
-                this.OnPropertyChanged();
-            }
-        }
-
-        private IMiniBlinkProxy _proxy;
-
+        
         public MainWindowViewModel()
         {
             if (IsDesignMode())
@@ -62,29 +27,43 @@ namespace MiniBlink.WpfDemo.ViewModels
                 return;
             }
 
-            _proxy = DllModuleBuilder.Create().Build<IMiniBlinkProxy>();
-            _proxy.Initialize();
-            IsInit = _proxy.IsInitialize();
-            if (IsInit)
-            {
-                Version = _proxy.GetVersionString();
-                this.ViewHandle = _proxy.CreateWebView();
-            }
+            // _proxy = DllModuleBuilder.Create().Build<IMiniBlinkProxy>();
+            // _proxy.Initialize();
+            // IsInit = _proxy.IsInitialize();
+            // if (IsInit)
+            // {
+            //     Version = _proxy.GetVersionString();
+            //     this.ViewHandle = _proxy.CreateWebView();
+            // }
+            //
+            // CurrentPath = AppDomain.CurrentDomain.BaseDirectory;
+            // CacheDir = Path.Combine(CurrentPath, "Cache");
+            // if (!System.IO.Directory.Exists(CacheDir))
+            // {
+            //     System.IO.Directory.CreateDirectory(CacheDir);
+            // }
+            //
+            // _proxy.OnTitleChanged(this.ViewHandle, OnTitleChanged, IntPtr.Zero);
+            // _proxy.OnCreateView(this.ViewHandle, OnCreateView, IntPtr.Zero);
+            // _proxy.OnPaintBitUpdated(this.ViewHandle,OnPaintBitUpdated,IntPtr.Zero);
+            // _proxy.SetDragEnable(ViewHandle, false);
+            // _proxy.SetDragDropEnable(ViewHandle, false);
+            // CookieFileName = CacheDir + "\\cookies.dat";
+            // _proxy.SetCookieJarFullPath(this.ViewHandle, CookieFileName);
+            // _proxy.SetLocalStorageFullPath(this.ViewHandle, CacheDir);
+            // _proxy.SetNavigationToNewWindowEnable(this.ViewHandle, true);
+            // _proxy.LoadURL(this.ViewHandle, "http://www.baidu.com");
+            // var code = _proxy.GetSource(this.ViewHandle);
+            // if (!IsDesignMode() && ViewHandle != IntPtr.Zero)
+            // {
+            //     _proxy.Resize(ViewHandle, (int)200, (int)200);
+            // }
+        }
 
-            CurrentPath = AppDomain.CurrentDomain.BaseDirectory;
-            CacheDir = Path.Combine(CurrentPath, "Cache");
-            if (!System.IO.Directory.Exists(CacheDir))
-            {
-                System.IO.Directory.CreateDirectory(CacheDir);
-            }
-
-            _proxy.OnTitleChanged(this.ViewHandle, OnTitleChanged, IntPtr.Zero);
-            _proxy.OnCreateView(this.ViewHandle, OnCreateView, IntPtr.Zero);
-            CookieFileName = CacheDir + "\\cookies.dat";
-            _proxy.SetCookieJarFullPath(this.ViewHandle, CookieFileName);
-            _proxy.SetLocalStorageFullPath(this.ViewHandle, CacheDir);
-            _proxy.LoadURL(this.ViewHandle, "http://www.baidu.com");
-            var code = _proxy.GetSource(this.ViewHandle);
+    
+        private void OnPaintBitUpdated(IntPtr webview, IntPtr param, IntPtr hdc, ref wkeRect r, int width, int height)
+        {
+             
         }
 
         private IntPtr OnCreateView(IntPtr webview, IntPtr param, wkeNavigationType navigationtype, IntPtr url, IntPtr windowfeatures)
@@ -93,10 +72,7 @@ namespace MiniBlink.WpfDemo.ViewModels
             return IntPtr.Zero;
         }
 
-        private void OnTitleChanged(IntPtr webview, IntPtr param, IntPtr title)
-        {
-            this.Title = _proxy.GetString(title);
-        }
+         
 
         public static bool IsDesignMode()
         {

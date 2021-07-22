@@ -188,7 +188,21 @@ namespace MiniBlink.Share
         [Import(EntryPoint = "wkeGetSource", CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Utf8Marshaler))]
         string GetSource(IntPtr webView);
+        /// <summary>
+        /// 设置webview获得焦点。 注意：如果webveiw绑定了窗口，窗口也会获得焦点。
+        /// </summary>
+        /// <param name="webView"></param>
+        [Import( EntryPoint = "wkeSetFocus", CallingConvention = CallingConvention.Cdecl)]
+        void  SetFocus (IntPtr webView);
 
+        [Import(EntryPoint = "wkeGC", CallingConvention = CallingConvention.Cdecl)]
+        void Gc(IntPtr webView, int delayMs);
+
+        [Import(EntryPoint = "wkeGetWebView", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        IntPtr GetWebView(string name);
+
+        [Import(EntryPoint = "wkeDestroyWebView", CallingConvention = CallingConvention.Cdecl)]
+        void DestroyWebView(IntPtr webView);
         #endregion
 
 
@@ -202,6 +216,7 @@ namespace MiniBlink.Share
         [Import(EntryPoint = "wkeSetLocalStorageFullPath", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
         void SetLocalStorageFullPath(IntPtr webView, string path);
+
 
         #endregion
 
@@ -298,6 +313,42 @@ namespace MiniBlink.Share
         [Import(EntryPoint = "wkeSetCookieJarFullPath", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
         void SetCookieJarFullPath(IntPtr webView, string path);
+
+        /// <summary>
+        /// 重新设置页面的像素宽高，如果webView是带窗口模式的，会设置实际窗口的宽高。
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="w"></param>
+        /// <param name="h"></param>
+        [Import(EntryPoint = "wkeResize", CallingConvention = CallingConvention.Cdecl)]
+        void Resize(IntPtr webView, int w, int h);
+
+        /// <summary>
+        /// 获取webView宽度像素
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <returns></returns>
+        [Import(EntryPoint = "wkeGetWidth", CallingConvention = CallingConvention.Cdecl)]
+        int GetWidth(IntPtr webView);
+
+        /// <summary>
+        /// 获取webView高度像素
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <returns></returns>
+        [Import(EntryPoint = "wkeGetHeight", CallingConvention = CallingConvention.Cdecl)]
+        int GetHeight(IntPtr webView);
+
+        /// <summary>
+        /// 获取webView排版出来的内容区域宽度像素。
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <returns></returns>
+        [Import(EntryPoint = "wkeGetContentWidth", CallingConvention = CallingConvention.Cdecl)]
+        int GetContentWidth(IntPtr webView);
+
+        [Import(EntryPoint = "wkeGetContentHeight", CallingConvention = CallingConvention.Cdecl)]
+        int GetContentHeight(IntPtr webView);
 
 
         /// <summary>
@@ -403,23 +454,25 @@ namespace MiniBlink.Share
         /// <param name="callback"></param>
         /// <param name="param"></param>
         [Import(EntryPoint = "wkeOnAlertBox", CallingConvention = CallingConvention.Cdecl)]
-        void OnAlertBox_x64(IntPtr webView, wkeAlertBoxCallback callback, IntPtr param);
+        void OnAlertBox(IntPtr webView, wkeAlertBoxCallback callback, IntPtr param);
+
         /// <summary>
         /// 网页弹出Confirm时触发此回调
         /// </summary>
         /// <param name="webView"></param>
         /// <param name="callback"></param>
         /// <param name="param"></param>
-        [Import( EntryPoint = "wkeOnConfirmBox", CallingConvention = CallingConvention.Cdecl)]
-        void OnConfirmBox_x64(IntPtr webView, wkeConfirmBoxCallback callback, IntPtr param);
+        [Import(EntryPoint = "wkeOnConfirmBox", CallingConvention = CallingConvention.Cdecl)]
+        void OnConfirmBox(IntPtr webView, wkeConfirmBoxCallback callback, IntPtr param);
+
         /// <summary>
         /// 网页弹出Prompt时触发此回调
         /// </summary>
         /// <param name="webView"></param>
         /// <param name="callback"></param>
         /// <param name="param"></param>
-        [Import( EntryPoint = "wkeOnPromptBox", CallingConvention = CallingConvention.Cdecl)]
-         void OnPromptBox(IntPtr webView, wkePromptBoxCallback callback, IntPtr param);
+        [Import(EntryPoint = "wkeOnPromptBox", CallingConvention = CallingConvention.Cdecl)]
+        void OnPromptBox(IntPtr webView, wkePromptBoxCallback callback, IntPtr param);
 
         #endregion
     }
@@ -460,28 +513,10 @@ namespace MiniBlink.Share
                     }
         }
 
-        public static MiniBlink Create()
+        public static IMiniBlinkProxy Create()
         {
             Init();
-            var handle = Proxy.CreateWebView();
-            if (handle == IntPtr.Zero)
-            {
-                throw new NullReferenceException(nameof(handle));
-            }
-
-            // Proxy.OnTitleChanged(handle,Cb,IntPtr.Zero);
-            return handle;
+            return Proxy;
         }
-
-
-        // public void LoadUrl(string url) => Proxy.LoadURL(this, url);
-        // public void SetCookieJarFullPath(string path) => Proxy.SetCookieJarFullPath(this, path);
-        // public void SetCookieJarPath(string path) => Proxy.SetCookieJarPath(this, path);
-        // public void SetLocalStorageFullPath(string path) => Proxy.SetLocalStorageFullPath(this, path);
-        // public void SetDragEnable(bool enable) => Proxy.SetDragEnable(this, enable);
-        // public void SetDragDropEnable(bool enable) => Proxy.SetDragDropEnable(this, enable);
-        // public void SetNavigationToNewWindowEnable(bool enable) => Proxy.SetNavigationToNewWindowEnable(this, enable);
-
-        public event EventHandler<TitleChangeEventArgs> OnTitleChanged;
     }
 }
