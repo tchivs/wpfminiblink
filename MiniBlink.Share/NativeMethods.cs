@@ -12,6 +12,8 @@ namespace MiniBlink.Share
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void wkeTitleChangedCallback(IntPtr webView, IntPtr param, IntPtr title);
+    [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+    public delegate void wkeURLChangedCallback(IntPtr webView, IntPtr param, IntPtr url);
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void wkeMouseOverUrlChangedCallback(IntPtr webView, IntPtr param, IntPtr url);
@@ -228,7 +230,7 @@ namespace MiniBlink.Share
         Other
     }
 
-    public enum wkeCursorStyle
+    public enum wkeCursorInfo
     {
         Pointer,
         Cross,

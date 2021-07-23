@@ -16,17 +16,17 @@
     </Window.DataContext>
     <Grid>
         <wpf:ChromeView x:Name="Chrome"/>
-        <StackPanel>
-            <Label>
-                <TextBlock>
-                    <Run Text="当前状态：" />
-                    <Run Text="{Binding ElementName=Chrome,Path=WebViewIsInitialize,Mode=OneWay}" />
-                </TextBlock>
-            </Label>
-            <TextBlock>
-                <Run Text="版本：" />
-                <Run Text="{Binding Version}" />
-            </TextBlock>
-        </StackPanel>
+        <!-- <StackPanel> -->
+        <!--     <Label> -->
+        <!--         <TextBlock> -->
+        <!--             <Run Text="当前状态：" /> -->
+        <!--             <Run Text="{Binding ElementName=Chrome,Path=WebViewIsInitialize,Mode=OneWay}" /> -->
+        <!--         </TextBlock> -->
+        <!--     </Label> -->
+        <!--     <TextBlock> -->
+        <!--         <Run Text="版本：" /> -->
+        <!--         <Run Text="{Binding Version}" /> -->
+        <!--     </TextBlock> -->
+        <!-- </StackPanel> -->
     </Grid>
 </Window>

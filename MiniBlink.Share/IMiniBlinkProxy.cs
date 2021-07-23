@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Text;
 using AutoDllProxy.Attributes;
 using MiniBlink.Share.Events;
 
@@ -13,6 +14,8 @@ namespace MiniBlink.Share
     [Dll("node_x86.dll", "node_x64.dll")]
     public interface IMiniBlinkProxy
     {
+        #region 基础
+
         /// <summary>
         /// 初始化
         /// </summary>
@@ -118,8 +121,12 @@ namespace MiniBlink.Share
             CallingConvention = CallingConvention.Cdecl)]
         void SetHandle(IntPtr webView, IntPtr wndHandle);
 
+        #endregion
 
         #region 浏览器操作
+
+        [Import(EntryPoint = "wkeGetCursorInfoType", CallingConvention = CallingConvention.Cdecl)]
+        wkeCursorInfo GetCursorInfoType(IntPtr webView);
 
         /// <summary>
         /// 设置是否支持拖拽文件到页面，默认开启。
@@ -188,12 +195,20 @@ namespace MiniBlink.Share
         [Import(EntryPoint = "wkeGetSource", CallingConvention = CallingConvention.Cdecl)]
         [return: MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Utf8Marshaler))]
         string GetSource(IntPtr webView);
+
         /// <summary>
         /// 设置webview获得焦点。 注意：如果webveiw绑定了窗口，窗口也会获得焦点。
         /// </summary>
         /// <param name="webView"></param>
-        [Import( EntryPoint = "wkeSetFocus", CallingConvention = CallingConvention.Cdecl)]
-        void  SetFocus (IntPtr webView);
+        [Import(EntryPoint = "wkeSetFocus", CallingConvention = CallingConvention.Cdecl)]
+        void SetFocus(IntPtr webView);
+
+        /// <summary>
+        /// 设置webview放弃焦点。
+        /// </summary>
+        /// <param name="webView"></param>
+        [Import(EntryPoint = "wkeKillFocus", CallingConvention = CallingConvention.Cdecl)]
+        void KillFocus(IntPtr webView);
 
         [Import(EntryPoint = "wkeGC", CallingConvention = CallingConvention.Cdecl)]
         void Gc(IntPtr webView, int delayMs);
@@ -201,10 +216,284 @@ namespace MiniBlink.Share
         [Import(EntryPoint = "wkeGetWebView", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         IntPtr GetWebView(string name);
 
+        /// <summary>
+        /// 干掉webView，释放其内存。
+        /// </summary>
+        /// <param name="webView"></param>
         [Import(EntryPoint = "wkeDestroyWebView", CallingConvention = CallingConvention.Cdecl)]
         void DestroyWebView(IntPtr webView);
+
+        /// <summary>
+        /// 获取编辑框中光标的位置
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <returns></returns>
+        [Import(EntryPoint = "wkeGetCaretRect", CallingConvention = CallingConvention.Cdecl)]
+        wkeRect GetCaretRect(IntPtr webView);
+
         #endregion
 
+        #region Frame
+
+        /// <summary>
+        /// 判断是否是主frame。
+        /// </summary>
+        /// <param name="webview"></param>
+        /// <param name="webFrame"></param>
+        /// <returns></returns>
+        [Import(EntryPoint = "wkeIsMainFrame", CallingConvention = CallingConvention.Cdecl)]
+        bool IsMainFrame(IntPtr webView, IntPtr webFrame);
+
+        /// <summary>
+        /// 获取指定frame的url
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="frameId"></param>
+        /// <returns></returns>
+        [Import(EntryPoint = "wkeGetFrameUrl", CallingConvention = CallingConvention.Cdecl,
+            MarshalTypeRef = typeof(Utf8Marshaler))]
+        string GetFrameUrl(IntPtr webView, IntPtr frameId);
+
+        /// <summary>
+        /// 判断是否是远程frame。
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="frameId"></param>
+        /// <returns></returns>
+        [Import(EntryPoint = "wkeIsWebRemoteFrame", CallingConvention = CallingConvention.Cdecl)]
+        bool IsWebRemoteFrame(IntPtr webView, IntPtr frameId);
+
+        /// <summary>
+        /// 获取主frame
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <returns></returns>
+        [Import(EntryPoint = "wkeWebFrameGetMainFrame", CallingConvention = CallingConvention.Cdecl)]
+        IntPtr WebFrameGetMainFrame(IntPtr webView);
+
+        #endregion
+
+        #region JsExec
+
+        /// <summary>
+        /// 获取页面指定frame的jsExecState
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="frameId"></param>
+        /// <returns></returns>
+        [Import(EntryPoint = "wkeGetGlobalExecByFrame", CallingConvention = CallingConvention.Cdecl)]
+        IntPtr GetGlobalExecByFrame(IntPtr webView, IntPtr frameId);
+
+        /// <summary>
+        /// 执行一段js代码，代码会在MB内部自动被包裹在一个function(){}中，所以使用的变量会作为局部变量以避免同页面js代码中的其他变量重名导致运行出错，要获取返回值，请加return。
+        /// </summary>
+        /// <param name="es"></param>
+        /// <param name="str"></param>
+        /// <returns></returns>
+        [Import(EntryPoint = "jsEval", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        long JsEval(IntPtr es, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Utf8Marshaler))]
+            string str);
+
+        [Import(EntryPoint = "jsEvalW", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        long JsEvalW(IntPtr es, string str);
+
+        /// <summary>
+        /// 同jsEvalW，isInClosure设定是否闭包运行js。
+        /// </summary>
+        /// <param name="es">GetGlobalExecByFrame返回的jsExecState</param>
+        /// <param name="str"></param>
+        /// <param name="isInClosure"></param>
+        /// <returns></returns>
+        [Import(EntryPoint = "jsEvalExW", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        long JsEvalExW(IntPtr es, string str, [MarshalAs(UnmanagedType.I1)] bool isInClosure);
+
+        /// <summary>
+        /// 执行页面中的js函数，
+        /// </summary>
+        /// <param name="es"></param>
+        /// <param name="func">要执行的函数</param>
+        /// <param name="thisObject">如果此js函数是成员函数，则需要填thisValue，否则可以传jsUndefined，</param>
+        /// <param name="args">func的参数数组</param>
+        /// <param name="argCount">参数个数</param>
+        /// <returns></returns>
+        [Import(EntryPoint = "jsCall", CallingConvention = CallingConvention.Cdecl)]
+        long JsCall(IntPtr es, long func, long thisObject, [MarshalAs(UnmanagedType.LPArray)] long[] args,
+            int argCount);
+
+        [Import(EntryPoint = "wkeJsBindFunction", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        void JsBindFunction(string name, wkeJsNativeFunction fn, IntPtr param, uint argCount);
+
+        [Import(EntryPoint = "wkeJsBindGetter", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        void JsBindGetter(string name, wkeJsNativeFunction fn, IntPtr param);
+
+        [Import(EntryPoint = "wkeJsBindSetter", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        void JsBindSetter(string name, wkeJsNativeFunction fn, IntPtr param);
+
+        [Import(EntryPoint = "jsArgCount", CallingConvention = CallingConvention.Cdecl)]
+        int JsArgCount(IntPtr es);
+
+        [Import(EntryPoint = "jsArgType", CallingConvention = CallingConvention.Cdecl)]
+        jsType JsArgType(IntPtr es, int argIdx);
+
+        [Import(EntryPoint = "jsArg", CallingConvention = CallingConvention.Cdecl)]
+        long JsArg(IntPtr es, int argIdx);
+
+        [Import(EntryPoint = "jsTypeOf", CallingConvention = CallingConvention.Cdecl)]
+        jsType JsTypeOf(long v);
+
+        [Import(EntryPoint = "jsIsNumber", CallingConvention = CallingConvention.Cdecl)]
+        bool JsIsNumber(long v);
+
+        [Import(EntryPoint = "jsIsString", CallingConvention = CallingConvention.Cdecl)]
+        bool JsIsString(long v);
+
+        [Import(EntryPoint = "jsIsBoolean", CallingConvention = CallingConvention.Cdecl)]
+        bool JsIsBoolean(long v);
+
+        [Import(EntryPoint = "jsIsObject", CallingConvention = CallingConvention.Cdecl)]
+        bool JsIsObject(long v);
+
+        [Import(EntryPoint = "jsIsFunction", CallingConvention = CallingConvention.Cdecl)]
+        bool JsIsFunction(long v);
+
+        [Import(EntryPoint = "jsIsUndefined", CallingConvention = CallingConvention.Cdecl)]
+        bool JsIsUndefined(long v);
+
+        [Import(EntryPoint = "jsIsNull", CallingConvention = CallingConvention.Cdecl)]
+        bool JsIsNull(long v);
+
+        [Import(EntryPoint = "jsIsArray", CallingConvention = CallingConvention.Cdecl)]
+        bool JsIsArray(long v);
+
+        [Import(EntryPoint = "jsIsTrue", CallingConvention = CallingConvention.Cdecl)]
+        bool JsIsTrue(long v);
+
+        [Import(EntryPoint = "jsIsFalse", CallingConvention = CallingConvention.Cdecl)]
+        bool JsIsFalse(long v);
+
+        [Import(EntryPoint = "jsToInt", CallingConvention = CallingConvention.Cdecl)]
+        int JsToInt(IntPtr es, long v);
+
+        [Import(EntryPoint = "jsToFloat", CallingConvention = CallingConvention.Cdecl)]
+        float JsToFloat(IntPtr es, long v);
+
+        [Import(EntryPoint = "jsToDouble", CallingConvention = CallingConvention.Cdecl)]
+        double JsToDouble(IntPtr es, long v);
+
+        [Import(EntryPoint = "jsToBoolean", CallingConvention = CallingConvention.Cdecl)]
+        byte JsToBoolean(IntPtr es, long v);
+
+        [Import(EntryPoint = "jsToTempString", CallingConvention = CallingConvention.Cdecl,
+            MarshalTypeRef = typeof(Utf8Marshaler))]
+        string JsToTempString(IntPtr es, long v);
+
+        [Import(EntryPoint = "jsToTempStringW", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        string JsToTempStringW(IntPtr es, long v);
+
+        [Import(EntryPoint = "jsInt", CallingConvention = CallingConvention.Cdecl)]
+        long JsInt(int n);
+
+        [Import(EntryPoint = "jsFloat", CallingConvention = CallingConvention.Cdecl)]
+        long JsFloat(float f);
+
+        [Import(EntryPoint = "jsDouble", CallingConvention = CallingConvention.Cdecl)]
+        long jsDouble(double d);
+
+        [Import(EntryPoint = "jsBoolean", CallingConvention = CallingConvention.Cdecl)]
+        long jsBoolean(bool b);
+
+        [Import(EntryPoint = "jsUndefined", CallingConvention = CallingConvention.Cdecl)]
+        long jsUndefined();
+
+        [Import(EntryPoint = "jsNull", CallingConvention = CallingConvention.Cdecl)]
+        long jsNull();
+
+        [Import(EntryPoint = "jsTrue", CallingConvention = CallingConvention.Cdecl)]
+        long jsTrue();
+
+        [Import(EntryPoint = "jsFalse", CallingConvention = CallingConvention.Cdecl)]
+        long jsFalse();
+
+        [Import(EntryPoint = "jsStringW", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        long jsStringW(IntPtr es, string str);
+
+        [Import(EntryPoint = "jsEmptyObject", CallingConvention = CallingConvention.Cdecl)]
+        long jsEmptyObject(IntPtr es);
+
+        [Import(EntryPoint = "jsEmptyArray", CallingConvention = CallingConvention.Cdecl)]
+        long jsEmptyArray(IntPtr es);
+
+        [Import(EntryPoint = "jsArrayBuffer", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        long jsArrayBuffer(IntPtr es, StringBuilder buffer, int size);
+
+        [Import(EntryPoint = "jsObject", CallingConvention = CallingConvention.Cdecl)]
+        long jsObject(IntPtr es, IntPtr obj);
+
+        [Import(EntryPoint = "jsFunction", CallingConvention = CallingConvention.Cdecl)]
+        long jsFunction(IntPtr es, IntPtr obj);
+
+        [Import(EntryPoint = "jsGetData", CallingConvention = CallingConvention.Cdecl)]
+        IntPtr jsGetData(IntPtr es, long jsValue);
+
+        [Import(EntryPoint = "jsGet", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        long jsGet(IntPtr es, long jsValue, string prop);
+
+        [Import(EntryPoint = "jsSet", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        void jsSet(IntPtr es, long jsValue, string prop, long v);
+
+        [Import(EntryPoint = "jsGetAt", CallingConvention = CallingConvention.Cdecl)]
+        long jsGetAt(IntPtr es, long jsValue, int index);
+
+        [Import(EntryPoint = "jsSetAt", CallingConvention = CallingConvention.Cdecl)]
+        void jsSetAt(IntPtr es, long jsValue, int index, long v);
+
+        [Import(EntryPoint = "jsGetLength", CallingConvention = CallingConvention.Cdecl)]
+        int jsGetLength(IntPtr es, long jsValue);
+
+        [Import(EntryPoint = "jsSetLength", CallingConvention = CallingConvention.Cdecl)]
+        void jsSetLength(IntPtr es, long jsValue, int length);
+
+        [Import(EntryPoint = "jsGlobalObject", CallingConvention = CallingConvention.Cdecl)]
+        long jsGlobalObject(IntPtr es);
+
+        [Import(EntryPoint = "jsGetWebView", CallingConvention = CallingConvention.Cdecl)]
+        IntPtr jsGetWebView(IntPtr es);
+
+
+        [Import(EntryPoint = "jsCallGlobal", CallingConvention = CallingConvention.Cdecl)]
+        long jsCallGlobal(IntPtr es, long func, [MarshalAs(UnmanagedType.LPArray)] Int64[] args, int argCount);
+
+        [Import(EntryPoint = "jsGetGlobal", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        long jsGetGlobal(IntPtr es, string prop);
+
+        [Import(EntryPoint = "jsSetGlobal", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        void jsSetGlobal(IntPtr es, string prop, long jsValue);
+
+        [Import(EntryPoint = "jsIsJsValueValid", CallingConvention = CallingConvention.Cdecl)]
+        byte jsIsJsValueValid(IntPtr es, long jsValue);
+
+        [Import(EntryPoint = "jsIsValidExecState", CallingConvention = CallingConvention.Cdecl)]
+        byte jsIsValidExecState(IntPtr es);
+
+        [Import(EntryPoint = "jsDeleteObjectProp", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        void jsDeleteObjectProp(IntPtr es, long jsValue, string prop);
+
+        [Import(EntryPoint = "jsGetArrayBuffer", CallingConvention = CallingConvention.Cdecl)]
+        IntPtr jsGetArrayBuffer(IntPtr es, long jsValue);
+
+        [Import(EntryPoint = "jsGetLastErrorIfException", CallingConvention = CallingConvention.Cdecl)]
+        IntPtr jsGetLastErrorIfException(IntPtr es);
+
+        [Import(EntryPoint = "jsThrowException", CallingConvention = CallingConvention.Cdecl)]
+        long jsThrowException(IntPtr es, [MarshalAs(UnmanagedType.LPArray)] byte[] utf8exception);
+
+        [Import(EntryPoint = "jsGetKeys", CallingConvention = CallingConvention.Cdecl)]
+        IntPtr jsGetKeys(IntPtr es, long jsValue);
+
+        #endregion
 
         #region LocalStorage
 
@@ -217,6 +506,21 @@ namespace MiniBlink.Share
             CharSet = CharSet.Unicode)]
         void SetLocalStorageFullPath(IntPtr webView, string path);
 
+        #endregion
+
+        #region resources
+        /// <summary>
+        /// 在指定frame中插入一段css。
+        /// </summary>
+        /// <param name="WebView"></param>
+        /// <param name="frameId"></param>
+        /// <param name="cssText"> const utf8* cssText </param>
+        [Import(EntryPoint = "wkeInsertCSSByFrame", CallingConvention = CallingConvention.Cdecl,
+            CharSet = CharSet.Unicode)]
+        void InsertCSSByFrame(IntPtr WebView, IntPtr frameId, string cssText);
+
+        [Import(EntryPoint = "wkeSetResourceGc", CallingConvention = CallingConvention.Cdecl)]
+        void SetResourceGc(IntPtr WebView, int intervalSec);
 
         #endregion
 
@@ -231,7 +535,7 @@ namespace MiniBlink.Share
         [Import(EntryPoint = "wkeSetUserAgent", CallingConvention = CallingConvention.Cdecl,
             CharSet = CharSet.Unicode)]
         void SetUserAgent(IntPtr webView,
-            [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Utf8Marshaler))]
+            // [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Utf8Marshaler))]
             string userAgent);
 
         /// <summary>
@@ -241,9 +545,7 @@ namespace MiniBlink.Share
         /// <param name="userAgent"></param>
         /// <returns></returns>
         [Import(EntryPoint = "wkeGetUserAgent", CallingConvention = CallingConvention.Cdecl)]
-        string GetUserAgent(IntPtr webView,
-            [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Utf8Marshaler))]
-            string userAgent);
+        string GetUserAgent(IntPtr webView);
 
         #endregion
 
@@ -415,6 +717,30 @@ namespace MiniBlink.Share
 
         #region Events
 
+        /// <summary>
+        /// url改变时触发此回调
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="callback"></param>
+        /// <param name="param"></param>
+        [Import(EntryPoint = "wkeOnURLChanged", CallingConvention = CallingConvention.Cdecl)]
+        void OnURLChanged(IntPtr webView, wkeURLChangedCallback callback, IntPtr param);
+
+        /// <summary>
+        /// url改变时触发此回调
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="callback"></param>
+        /// <param name="param"></param>
+        [Import(EntryPoint = "wkeOnURLChanged2", CallingConvention = CallingConvention.Cdecl)]
+        void OnURLChanged(IntPtr webView, wkeURLChangedCallback2 callback, IntPtr param);
+
+        /// <summary>
+        /// 标题被改变
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="callback"></param>
+        /// <param name="callbackParam"></param>
         [Import(EntryPoint = "wkeOnTitleChanged", CallingConvention = CallingConvention.Cdecl)]
         void OnTitleChanged(IntPtr webView, wkeTitleChangedCallback callback, IntPtr callbackParam);
 
@@ -427,6 +753,14 @@ namespace MiniBlink.Share
         [Import(EntryPoint = "wkeOnCreateView", CallingConvention = CallingConvention.Cdecl)]
         void OnCreateView(IntPtr webView, wkeCreateViewCallback callback, IntPtr param);
 
+        /// <summary>
+        /// 鼠标滑过url时触发此回调
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="callback"></param>
+        /// <param name="callbackParam"></param>
+        [Import(EntryPoint = "wkeOnMouseOverUrlChanged", CallingConvention = CallingConvention.Cdecl)]
+        void OnMouseOverUrlChanged(IntPtr webView, wkeTitleChangedCallback callback, IntPtr callbackParam);
 
         /// <summary>
         /// 页面任何区域刷新时触发此回调
@@ -474,14 +808,34 @@ namespace MiniBlink.Share
         [Import(EntryPoint = "wkeOnPromptBox", CallingConvention = CallingConvention.Cdecl)]
         void OnPromptBox(IntPtr webView, wkePromptBoxCallback callback, IntPtr param);
 
+        [Import(EntryPoint = "wkeFireMouseWheelEvent", CallingConvention = CallingConvention.Cdecl)]
+        bool FireMouseWheelEvent(IntPtr webView, int x, int y, int delta, uint flags);
+
+        [Import(EntryPoint = "wkeFireMouseEvent", CallingConvention = CallingConvention.Cdecl)]
+        bool FireMouseEvent(IntPtr webView, uint message, int x, int y, uint flags);
+
+        [Import(EntryPoint = "wkeFireKeyPressEvent", CallingConvention = CallingConvention.Cdecl)]
+        bool FireKeyPressEvent(IntPtr webView, int charCode, uint flags,
+            [MarshalAs(UnmanagedType.I1)] bool systemKey);
+
+        [Import(EntryPoint = "wkeFireKeyDownEvent", CallingConvention = CallingConvention.Cdecl)]
+        bool FireKeyDownEvent(IntPtr webView, int virtualKeyCode, uint flags,
+            [MarshalAs(UnmanagedType.I1)] bool systemKey);
+
+        [Import(EntryPoint = "wkeFireKeyUpEvent", CallingConvention = CallingConvention.Cdecl)]
+        bool FireKeyUpEvent(IntPtr webView, int virtualKeyCode, uint flags,
+            [MarshalAs(UnmanagedType.I1)] bool systemKey);
+
+        [Import(EntryPoint = "wkeOnNavigation", CallingConvention = CallingConvention.Cdecl)]
+        void OnNavigation(IntPtr webView, wkeNavigationCallback callback, IntPtr param);
+
         #endregion
     }
 
     public struct MiniBlink
     {
         IntPtr _handle;
-        static readonly IMiniBlinkProxy Proxy;
-        internal IMiniBlinkProxy Instance => Proxy;
+        internal static readonly IMiniBlinkProxy Proxy;
 
         public bool Equals(MiniBlink other)
             => other._handle == _handle;

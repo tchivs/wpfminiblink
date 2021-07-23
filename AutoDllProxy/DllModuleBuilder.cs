@@ -88,7 +88,7 @@ namespace AutoDllProxy
 #if NET472
 #if DEBUG
 
-                asm.Save(asmFileName);
+                asm.Save(asmFileName);//调试模式下输入程序集用于反编译查看结果
 #endif
 #endif
                 Types.Add(interfaceType.FullName, type);

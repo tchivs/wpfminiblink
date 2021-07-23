@@ -1,12 +1,19 @@
 using System;
 using System.Windows;
+using System.Windows.Input;
+using System.Windows.Interop;
 using System.Windows.Media.Imaging;
+using MiniBlink.Share;
+using MiniBlink.Share.Events;
+using MiniBlink.Wpf.Ime;
 
 namespace MiniBlink.Wpf
 {
     public sealed partial class ChromeView
     {
         #region properties
+
+        public IWpfKeyboardHandler WpfKeyboardHandler { get; set; }
 
         public WriteableBitmap ImageSource
         {
@@ -49,23 +56,6 @@ namespace MiniBlink.Wpf
         public static readonly DependencyProperty TitleProperty = TitlePropertyKey.DependencyProperty;
 
         #endregion
-
-        #region event
-
-        /// <summary>
-        /// 标题被改变事件
-        /// </summary>
-        public static readonly RoutedEvent TitleChangedEvent =
-            EventManager.RegisterRoutedEvent("TitleChanged", RoutingStrategy.Bubble,
-                typeof(EventHandler<TitleChangedEventArgs>), typeof(ChromeView));
-
-        public event RoutedEventHandler TitleChanged
-        {
-            add { this.AddHandler(TitleChangedEvent, value); }
-            remove { this.RemoveHandler(TitleChangedEvent, value); }
-        }
-
-        #endregion
     }
 
     //用于承载时间消息的事件参数
@@ -78,5 +68,48 @@ namespace MiniBlink.Wpf
         }
 
         public string Title { get; }
+    }
+
+    public class OnNavigateEventArgs : RoutedEventArgs
+    {
+        public string Url { get; }
+        public NavigateType Type { get; }
+        public bool Cancel { get; set; }
+
+        public OnNavigateEventArgs(RoutedEvent routedEvent, object source, string url, NavigateType type) : base(
+            routedEvent, source)
+        {
+            this.Url = url;
+            this.Type = type;
+        }
+
+        public OnNavigateEventArgs(RoutedEvent routedEvent, object source, string url, wkeNavigationType type) : base(
+            routedEvent, source)
+        {
+            this.Url = url;
+            switch (type)
+            {
+                case wkeNavigationType.BackForward:
+                    Type = NavigateType.BackForward;
+                    break;
+                case wkeNavigationType.FormReSubmit:
+                    Type = NavigateType.ReSubmit;
+                    break;
+                case wkeNavigationType.FormSubmit:
+                    Type = NavigateType.Submit;
+                    break;
+                case wkeNavigationType.LinkClick:
+                    Type = NavigateType.LinkClick;
+                    break;
+                case wkeNavigationType.ReLoad:
+                    Type = NavigateType.ReLoad;
+                    break;
+                case wkeNavigationType.Other:
+                    Type = NavigateType.Other;
+                    break;
+                default:
+                    throw new Exception("未知的重定向类型：" + type);
+            }
+        }
     }
 }
