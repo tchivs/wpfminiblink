@@ -23,8 +23,14 @@ namespace AutoDllProxy
         }
     }
 
+    public enum Platform
+    {
+        X86,X64,Any
+    }
     public class DllModuleBuilder
     {
+        private readonly Platform _platform;
+
         /// <summary>
         /// DLL所在路径
         /// </summary>
@@ -48,9 +54,14 @@ namespace AutoDllProxy
 
         private string GetDllName => Is64() ? this.DllX64Name : DllName;
 
-        public static DllModuleBuilder Create()
+        public static DllModuleBuilder Create(Platform platform)
         {
-            return new DllModuleBuilder();
+            return new DllModuleBuilder(platform);
+        }
+
+        public DllModuleBuilder(Platform platform)
+        {
+            _platform = platform;
         }
 
         public TModule Build<TModule>()
@@ -126,8 +137,23 @@ namespace AutoDllProxy
             }
             else
             {
-                this.DllName = dllDesc.Name;
-                this.DllX64Name = dllDesc.NameX64;
+                switch (_platform)
+                {
+                    case Platform.X86:
+                        this.DllName = dllDesc.Name;
+                        this.DllX64Name = dllDesc.Name; break;
+                    case Platform.X64:
+                        this.DllName = dllDesc.NameX64;
+                        this.DllX64Name = dllDesc.NameX64;
+                        break;
+                    case Platform.Any:
+                        this.DllName = dllDesc.Name;
+                        this.DllX64Name = dllDesc.NameX64;
+                        break;
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+                
             }
         }
     }

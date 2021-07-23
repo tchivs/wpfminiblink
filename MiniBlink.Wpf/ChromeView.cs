@@ -10,6 +10,7 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using AutoDllProxy;
 using MiniBlink.Share;
 using MiniBlink.Share.Events;
 using MiniBlink.Wpf.Ime;
@@ -111,6 +112,7 @@ namespace MiniBlink.Wpf
             DefaultStyleKeyProperty.OverrideMetadata(typeof(ChromeView),
                 new FrameworkPropertyMetadata(typeof(ChromeView)));
         }
+
         #endregion
 
         #region ctor
@@ -121,13 +123,13 @@ namespace MiniBlink.Wpf
             Focusable = true;
             //去除选中焦点样式
             FocusVisualStyle = null;
-          
+
             // this.DefaultStyleKey = typeof(ChromeView);
             if (IsDesignMode())
             {
                 return;
             }
-
+            Share.MiniBlink.Init(Platform.Any);
             Handle = Share.MiniBlink.Create()
                 .SetNavigationToNewWindowEnable(false)
                 .SetDragEnable(false).ShowDevTools()

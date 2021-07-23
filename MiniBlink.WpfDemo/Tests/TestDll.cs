@@ -19,7 +19,7 @@ namespace MiniBlink.WpfDemo.Tests
 
         public TestDll()
         {
-            this.p = DllModuleBuilder.Create().Build<IMiniBlinkProxy>();
+            this.p = DllModuleBuilder.Create(Platform.Any).Build<IMiniBlinkProxy>();
         }
 
         [SetUp]
