@@ -15,15 +15,22 @@ namespace MiniBlink.Wpf
         /// 标题被改变事件
         /// </summary>
         public static readonly RoutedEvent TitleChangedEvent =
-            EventManager.RegisterRoutedEvent("TitleChanged", RoutingStrategy.Bubble,
+            EventManager.RegisterRoutedEvent(nameof(TitleChanged), RoutingStrategy.Bubble,
                 typeof(EventHandler<TitleChangedEventArgs>), typeof(ChromeView));
 
         /// <summary>
         /// 页面导航时触发此回调
         /// </summary>
         public static readonly RoutedEvent OnNavigationEvent =
-            EventManager.RegisterRoutedEvent("OnNavigation", RoutingStrategy.Bubble,
+            EventManager.RegisterRoutedEvent(nameof(OnNavigation), RoutingStrategy.Bubble,
                 typeof(EventHandler<OnNavigateEventArgs>), typeof(ChromeView));
+
+        /// <summary>
+        /// URL被改变
+        /// </summary>
+        public static readonly RoutedEvent OnUrlChangedEvent =
+            EventManager.RegisterRoutedEvent(nameof(OnUrlChanged), RoutingStrategy.Bubble,
+                typeof(EventHandler<OnUrlChangedEventArgs>), typeof(ChromeView));
 
         #endregion
 
@@ -41,11 +48,15 @@ namespace MiniBlink.Wpf
             remove => RemoveHandler(OnNavigationEvent, value);
         }
 
+        public event EventHandler<OnUrlChangedEventArgs> OnUrlChanged
+        {
+            add => AddHandler(OnUrlChangedEvent, value);
+            remove => RemoveHandler(OnUrlChangedEvent, value);
+        }
+
         #endregion
 
         #region RaiseEvents
-
-        
 
         #endregion
     }

@@ -20,9 +20,13 @@ namespace MiniBlink.Wpf
     {
         #region fields
 
-        private int _width;
-        private int _height;
+        System.Drawing.Size oldSize;
+
+        // private int _width;
+        // private int _height;
         Window _sourceWindow;
+        readonly IWpfKeyboardHandler _wpfKeyboardHandler;
+
         public Share.MiniBlink Handle { get; private set; }
 
         #endregion
@@ -102,6 +106,11 @@ namespace MiniBlink.Wpf
             return flags;
         }
 
+        static ChromeView()
+        {
+            DefaultStyleKeyProperty.OverrideMetadata(typeof(ChromeView),
+                new FrameworkPropertyMetadata(typeof(ChromeView)));
+        }
         #endregion
 
         #region ctor
@@ -112,19 +121,20 @@ namespace MiniBlink.Wpf
             Focusable = true;
             //去除选中焦点样式
             FocusVisualStyle = null;
-            DefaultStyleKeyProperty.OverrideMetadata(typeof(ChromeView),
-                new FrameworkPropertyMetadata(typeof(ChromeView)));
+          
+            // this.DefaultStyleKey = typeof(ChromeView);
             if (IsDesignMode())
             {
                 return;
             }
+
             Handle = Share.MiniBlink.Create()
                 .SetNavigationToNewWindowEnable(false)
-                .SetDragEnable(false)
+                .SetDragEnable(false).ShowDevTools()
                 .SetDragDropEnable(false);
             Api = Share.MiniBlink.Proxy;
             WebViewIsInitialize = Share.MiniBlink.IsGlobalInitialization;
-            WpfKeyboardHandler = new WpfImeKeyboardHandler(this);
+            _wpfKeyboardHandler = new WpfImeKeyboardHandler(this);
             PresentationSource.AddSourceChangedHandler(this, PresentationSourceChangedHandler);
             if (WebViewIsInitialize)
             {
@@ -141,19 +151,24 @@ namespace MiniBlink.Wpf
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            this.Handle.LoadUrl("http://www.baidu.com").ShowDevTools();
         }
 
-        #region webViewEvent
 
-        private void RaiseTitleChanged(IntPtr webview, IntPtr param, IntPtr title)
+        private void RaiseTitleChanged(IntPtr webView, IntPtr param, IntPtr title)
         {
             this.Title = Api.GetString(title);
             TitleChangedEventArgs args = new TitleChangedEventArgs(TitleChangedEvent, this, Title);
             this.RaiseEvent(args);
         }
 
-        System.Drawing.Size oldSize;
+        private void RaiseUrlChangedEvent(OnUrlChangedEventArgs onUrlChangedEventArgs)
+        {
+            this.RaiseEvent(onUrlChangedEventArgs);
+            if (this.WebViewIsInitialize)
+            {
+                this.Handle.LoadUrl(onUrlChangedEventArgs.Url);
+            }
+        }
 
         /// <summary>
         /// 触发渲染
@@ -169,15 +184,34 @@ namespace MiniBlink.Wpf
         {
             if (width > 0 && height > 0)
             {
-                ImageSource.WritePixels(
-                    new System.Windows.Int32Rect(0, 0, ImageSource.PixelWidth, ImageSource.PixelHeight),
-                    hdc, width * height * 4, width * 4);
+                if (oldSize.Width == width && oldSize.Height == height && ImageSource != null)
+                {
+                    ImageSource.WritePixels(
+                        new Int32Rect(0, 0, ImageSource.PixelWidth, ImageSource.PixelHeight), hdc,
+                        width * height * 4, width * 4);
+                }
+                else
+                {
+                    // BitmapPalette palette = new BitmapPalette(new List<System.Windows.Media.Color>()
+                    //     {Colors.Blue, Colors.Green, Colors.Red});
+                    BitmapSource src = BitmapSource.Create(width, height, 96, 96, PixelFormats.Bgra32,
+                        null, hdc, width * height * 4, width * 4);
+                    ImageSource = new WriteableBitmap(src);
+                    // this.ImageSource = new WriteableBitmap(width, height, 96, 96, PixelFormats.Bgra32, null);
+                    oldSize = new System.Drawing.Size(width, height);
+                }
             }
+
+            // if (width > 0 && height > 0)
+            // {
+            //     ImageSource.WritePixels(
+            //         new System.Windows.Int32Rect(0, 0, ImageSource.PixelWidth, ImageSource.PixelHeight),
+            //         hdc, width * height * 4, width * 4);
+            // }
         }
 
         #endregion
 
-        #endregion
 
         #region private Methods
 
@@ -220,7 +254,7 @@ namespace MiniBlink.Wpf
             {
                 var source = (HwndSource) args.NewSource;
 
-                WpfKeyboardHandler.Setup(source);
+                _wpfKeyboardHandler.Setup(source);
                 // var matrix = source.CompositionTarget.TransformToDevice;
                 if (source.RootVisual is Window window)
                 {
@@ -229,7 +263,7 @@ namespace MiniBlink.Wpf
             }
             else if (args.OldSource != null)
             {
-                WpfKeyboardHandler.Dispose();
+                _wpfKeyboardHandler.Dispose();
                 if (args.OldSource.RootVisual is Window window)
                 {
                     _sourceWindow = null;
@@ -411,12 +445,11 @@ namespace MiniBlink.Wpf
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
             base.OnRenderSizeChanged(sizeInfo);
-            _width = (int) ActualWidth;
-            _height = (int) ActualHeight;
             if (Handle != IntPtr.Zero)
             {
-                this.ImageSource = new WriteableBitmap(_width, _height, 96, 96, PixelFormats.Bgra32, null);
-                Api.Resize(Handle, _width, _height);
+                var width = (int) ActualWidth;
+                var height = (int) ActualHeight;
+                Api.Resize(Handle, width, height);
             }
         }
 

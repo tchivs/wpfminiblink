@@ -1050,7 +1050,7 @@ namespace WpfMiniBlink
             this.Child = ViewImage;
             this.ViewImage.SetBinding(System.Windows.Controls.Image.SourceProperty, "WriteBitMap");
             this.DataContext = this;
-            InvokeBro ??= this;
+            InvokeBro = this;
             LoadResourceHandlerList = new List<ILoadResource>();
             if (!Utils.IsDesignMode())
             {

@@ -13,7 +13,46 @@ namespace MiniBlink.Wpf
     {
         #region properties
 
-        public IWpfKeyboardHandler WpfKeyboardHandler { get; set; }
+        // public string Url
+        // {
+        //     get => (string) this.GetValue(UrlProperty);
+        //       set => this.SetValue(UrlProperty, value);
+        // }
+        //
+        // private static readonly DependencyProperty UrlProperty = DependencyProperty.Register(
+        //     nameof(Url),
+        //     typeof(string), typeof(ChromeView), new PropertyMetadata(null, OnUrlPropertyChanged));
+
+
+        /// <summary>
+        /// 获取或设置Url的值
+        /// </summary>
+        public string Url
+        {
+            get => (string) GetValue(UrlProperty);
+            set => SetValue(UrlProperty, value);
+        }
+
+        /// <summary>
+        /// 标识 Url 依赖属性。
+        /// </summary>
+        public static readonly DependencyProperty UrlProperty =
+            DependencyProperty.Register(nameof(Url), typeof(string), typeof(ChromeView),
+                new PropertyMetadata(default(string), OnUrlChangedCallback));
+
+        private static void OnUrlChangedCallback(DependencyObject obj, DependencyPropertyChangedEventArgs args)
+        {
+            var oldValue = (string) args.OldValue;
+            var newValue = (string) args.NewValue;
+            if (oldValue == newValue)
+                return;
+            if (obj is ChromeView target)
+            {
+                var e = new OnUrlChangedEventArgs(OnUrlChangedEvent, target, newValue);
+                target.RaiseUrlChangedEvent(e);
+            }
+        }
+
 
         public WriteableBitmap ImageSource
         {
@@ -27,6 +66,7 @@ namespace MiniBlink.Wpf
             typeof(WriteableBitmap), typeof(ChromeView), new PropertyMetadata(null));
 
         public static readonly DependencyProperty ImageSourceProperty = ImageSourcePropertyKey.DependencyProperty;
+
 
         public bool WebViewIsInitialize
         {
@@ -68,6 +108,17 @@ namespace MiniBlink.Wpf
         }
 
         public string Title { get; }
+    }
+
+    public class OnUrlChangedEventArgs : RoutedEventArgs
+    {
+        public string Url { get; set; }
+
+        public OnUrlChangedEventArgs(RoutedEvent routedEvent, object source, string url) : base(
+            routedEvent, source)
+        {
+            this.Url = url;
+        }
     }
 
     public class OnNavigateEventArgs : RoutedEventArgs

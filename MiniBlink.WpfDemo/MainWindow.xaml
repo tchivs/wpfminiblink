@@ -14,19 +14,32 @@
     <Window.DataContext>
         <viewModels:MainWindowViewModel />
     </Window.DataContext>
-    <Grid>
-        <wpf:ChromeView x:Name="Chrome"/>
-        <!-- <StackPanel> -->
-        <!--     <Label> -->
-        <!--         <TextBlock> -->
-        <!--             <Run Text="当前状态：" /> -->
-        <!--             <Run Text="{Binding ElementName=Chrome,Path=WebViewIsInitialize,Mode=OneWay}" /> -->
-        <!--         </TextBlock> -->
-        <!--     </Label> -->
-        <!--     <TextBlock> -->
-        <!--         <Run Text="版本：" /> -->
-        <!--         <Run Text="{Binding Version}" /> -->
-        <!--     </TextBlock> -->
-        <!-- </StackPanel> -->
-    </Grid>
+    <TabControl>
+        <TabItem>
+            <wpf:ChromeView Url="http://baidu.com" />
+        </TabItem>
+        <TabItem>
+            <wpf:ChromeView Url="http://so.com" />
+
+        </TabItem>
+    </TabControl>
+
+    <!-- <TabControl> -->
+    <!--     -->
+    <!--     <TabItem Header="360"> -->
+    <!--         <wpf:ChromeView Url="http://so.com"/> -->
+    <!--     </TabItem> -->
+    <!-- </TabControl> -->
+    <!-- <StackPanel> -->
+    <!--     <Label> -->
+    <!--         <TextBlock> -->
+    <!--             <Run Text="当前状态：" /> -->
+    <!--             <Run Text="{Binding ElementName=Chrome,Path=WebViewIsInitialize,Mode=OneWay}" /> -->
+    <!--         </TextBlock> -->
+    <!--     </Label> -->
+    <!--     <TextBlock> -->
+    <!--         <Run Text="版本：" /> -->
+    <!--         <Run Text="{Binding Version}" /> -->
+    <!--     </TextBlock> -->
+    <!-- </StackPanel> -->
 </Window>
