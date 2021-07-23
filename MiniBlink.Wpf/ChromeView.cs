@@ -23,7 +23,7 @@ namespace MiniBlink.Wpf
         private int _width;
         private int _height;
         Window _sourceWindow;
-        private IntPtr _handle;
+        public Share.MiniBlink Handle { get; private set; }
 
         #endregion
 
@@ -118,24 +118,17 @@ namespace MiniBlink.Wpf
             {
                 return;
             }
-
-            Api = Share.MiniBlink.Create();
-
-            if (!Api.IsInitialize())
-            {
-                throw new ExternalException(nameof(IMiniBlinkProxy));
-            }
-
+            Handle = Share.MiniBlink.Create()
+                .SetNavigationToNewWindowEnable(false)
+                .SetDragEnable(false)
+                .SetDragDropEnable(false);
+            Api = Share.MiniBlink.Proxy;
+            WebViewIsInitialize = Share.MiniBlink.IsGlobalInitialization;
             WpfKeyboardHandler = new WpfImeKeyboardHandler(this);
             PresentationSource.AddSourceChangedHandler(this, PresentationSourceChangedHandler);
-            WebViewIsInitialize = Api.IsInitialize();
             if (WebViewIsInitialize)
             {
-                _handle = Api.CreateWebView();
-                Api.SetNavigationToNewWindowEnable(_handle, false);
-                Api.SetDragEnable(_handle, false);
-                Api.SetDragDropEnable(_handle, false);
-                this.SynchronizationEvent(_handle);
+                this.SynchronizationEvent(Handle);
             }
 
             this.Loaded += OnLoaded;
@@ -148,7 +141,7 @@ namespace MiniBlink.Wpf
 
         private void OnLoaded(object sender, RoutedEventArgs e)
         {
-            Api.LoadURL(this._handle, "http://www.baidu.com");
+            this.Handle.LoadUrl("http://www.baidu.com").ShowDevTools();
         }
 
         #region webViewEvent
@@ -246,11 +239,11 @@ namespace MiniBlink.Wpf
 
         public void TextInputPress(string text)
         {
-            if (_handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
                 for (int i = 0; i < text.Length; i++)
                 {
-                    Api.FireKeyPressEvent(_handle, text[i], 0, false);
+                    Api.FireKeyPressEvent(Handle, text[i], 0, false);
                 }
             }
         }
@@ -258,7 +251,7 @@ namespace MiniBlink.Wpf
         internal void MoveImeWindow(IntPtr hwnd, bool systemCaret, int languageCodeId)
         {
             var hIMC = ImeNative.ImmGetContext(hwnd);
-            var rc = Api.GetCaretRect(_handle);
+            var rc = Api.GetCaretRect(Handle);
             var x = rc.x + rc.w;
             var y = rc.y + rc.h;
             const int kCaretMargin = 1;
@@ -297,7 +290,7 @@ namespace MiniBlink.Wpf
         /// </summary>
         void SetCursors()
         {
-            switch (Api.GetCursorInfoType(_handle))
+            switch (Api.GetCursorInfoType(Handle))
             {
                 case wkeCursorInfo.Pointer:
                     Cursor = null;
@@ -384,7 +377,7 @@ namespace MiniBlink.Wpf
                 flags |= (uint) wkeKeyFlags.WKE_EXTENDED;
             }
 
-            if (Api.FireKeyDownEvent(_handle, code, 0, false))
+            if (Api.FireKeyDownEvent(Handle, code, 0, false))
             {
                 e.Handled = false;
             }
@@ -403,7 +396,7 @@ namespace MiniBlink.Wpf
                 flags |= (uint) wkeKeyFlags.WKE_EXTENDED;
             }
 
-            if (Api.FireKeyUpEvent(_handle, code, 0, false))
+            if (Api.FireKeyUpEvent(Handle, code, 0, false))
             {
                 e.Handled = false;
             }
@@ -420,28 +413,28 @@ namespace MiniBlink.Wpf
             base.OnRenderSizeChanged(sizeInfo);
             _width = (int) ActualWidth;
             _height = (int) ActualHeight;
-            if (_handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
                 this.ImageSource = new WriteableBitmap(_width, _height, 96, 96, PixelFormats.Bgra32, null);
-                Api.Resize(_handle, _width, _height);
+                Api.Resize(Handle, _width, _height);
             }
         }
 
         protected override void OnGotFocus(RoutedEventArgs e)
         {
             base.OnGotFocus(e);
-            if (_handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
-                Api.SetFocus(_handle);
+                Api.SetFocus(Handle);
             }
         }
 
         protected override void OnLostFocus(System.Windows.RoutedEventArgs e)
         {
             base.OnLostFocus(e);
-            if (_handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
-                Api.KillFocus(_handle);
+                Api.KillFocus(Handle);
             }
         }
 
@@ -449,17 +442,17 @@ namespace MiniBlink.Wpf
         {
             base.OnMouseWheel(e);
             var point = e.GetPosition(this);
-            if (_handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
                 uint flags = GetMouseFlags(e);
-                Api.FireMouseWheelEvent(_handle, (int) point.X, (int) point.Y, e.Delta, flags);
+                Api.FireMouseWheelEvent(Handle, (int) point.X, (int) point.Y, e.Delta, flags);
             }
         }
 
         protected override void OnMouseDown(MouseButtonEventArgs e)
         {
             base.OnMouseDown(e);
-            if (_handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
                 Focus();
                 uint msg = 0;
@@ -478,7 +471,7 @@ namespace MiniBlink.Wpf
 
                 var point = e.GetPosition(this);
                 uint flags = GetMouseFlags(e);
-                Api.FireMouseEvent(_handle, msg, (int) point.X, (int) point.Y, flags);
+                Api.FireMouseEvent(Handle, msg, (int) point.X, (int) point.Y, flags);
             }
         }
 
@@ -489,7 +482,7 @@ namespace MiniBlink.Wpf
         protected override void OnMouseUp(MouseButtonEventArgs e)
         {
             base.OnMouseUp(e);
-            if (_handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
                 uint msg = 0;
                 if (e.ChangedButton == MouseButton.Left)
@@ -508,18 +501,18 @@ namespace MiniBlink.Wpf
                 var point = e.GetPosition(this);
 
                 uint flags = GetMouseFlags(e);
-                Api.FireMouseEvent(_handle, msg, (int) point.X, (int) point.Y, flags);
+                Api.FireMouseEvent(Handle, msg, (int) point.X, (int) point.Y, flags);
             }
         }
 
         protected override void OnMouseMove(MouseEventArgs e)
         {
             base.OnMouseMove(e);
-            if (this._handle != IntPtr.Zero)
+            if (this.Handle != IntPtr.Zero)
             {
                 uint flags = GetMouseFlags(e);
                 var point = e.GetPosition(this);
-                Api.FireMouseEvent(this._handle, 0x200, (int) point.X, (int) point.Y, flags);
+                Api.FireMouseEvent(this.Handle, 0x200, (int) point.X, (int) point.Y, flags);
             }
         }
 
@@ -530,11 +523,11 @@ namespace MiniBlink.Wpf
         protected override void OnPreviewTextInput(TextCompositionEventArgs e)
         {
             base.OnPreviewTextInput(e);
-            if (_handle != IntPtr.Zero)
+            if (Handle != IntPtr.Zero)
             {
                 for (int i = 0; i < e.Text.Length; i++)
                 {
-                    Api.FireKeyPressEvent(_handle, e.Text[i], 0, false);
+                    Api.FireKeyPressEvent(Handle, e.Text[i], 0, false);
                 }
             }
         }
@@ -552,13 +545,13 @@ namespace MiniBlink.Wpf
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    if (this._handle != IntPtr.Zero)
+                    if (this.Handle != IntPtr.Zero)
                     {
-                        Api.DestroyWebView(this._handle);
+                        Api.DestroyWebView(this.Handle);
                     }
                 }
 
-                this._handle = IntPtr.Zero;
+                this.Handle = IntPtr.Zero;
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null

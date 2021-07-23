@@ -6,11 +6,6 @@ using MiniBlink.Share.Events;
 
 namespace MiniBlink.Share
 {
-    internal static class Const
-    {
-        public const string WebViewHandle = "webView";
-    }
-
     [Dll("node_x86.dll", "node_x64.dll")]
     public interface IMiniBlinkProxy
     {
@@ -124,6 +119,16 @@ namespace MiniBlink.Share
         #endregion
 
         #region 浏览器操作
+
+        /// <summary>
+        /// 显示DevTools窗口
+        /// </summary>
+        /// <param name="WebView"></param>
+        /// <param name="path">路径</param>
+        /// <param name="callback"></param>
+        /// <param name="param"></param>
+        [Import(EntryPoint = "wkeShowDevtools", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Unicode)]
+        void ShowDevTools(IntPtr webView, string path, wkeOnShowDevtoolsCallback callback, IntPtr param);
 
         [Import(EntryPoint = "wkeGetCursorInfoType", CallingConvention = CallingConvention.Cdecl)]
         wkeCursorInfo GetCursorInfoType(IntPtr webView);
@@ -509,6 +514,7 @@ namespace MiniBlink.Share
         #endregion
 
         #region resources
+
         /// <summary>
         /// 在指定frame中插入一段css。
         /// </summary>
@@ -705,6 +711,15 @@ namespace MiniBlink.Share
             string url, [MarshalAs(UnmanagedType.CustomMarshaler, MarshalTypeRef = typeof(Utf8Marshaler))]
             string cookie);
 
+        /// <summary>
+        /// 通过访问器visitor访问所有cookie
+        /// </summary>
+        /// <param name="webView"></param>
+        /// <param name="usetData"></param>
+        /// <param name="visitor"></param>
+        [Import(EntryPoint = "wkeVisitAllCookie", CallingConvention = CallingConvention.Cdecl)]
+        void VisitAllCookie(IntPtr webView, IntPtr userData, wkeCookieVisitor visitor);
+
         #endregion
 
         #region 字符串相关
@@ -830,47 +845,5 @@ namespace MiniBlink.Share
         void OnNavigation(IntPtr webView, wkeNavigationCallback callback, IntPtr param);
 
         #endregion
-    }
-
-    public struct MiniBlink
-    {
-        IntPtr _handle;
-        internal static readonly IMiniBlinkProxy Proxy;
-
-        public bool Equals(MiniBlink other)
-            => other._handle == _handle;
-
-        public static implicit operator MiniBlink(IntPtr ptr)
-            => new MiniBlink() {_handle = ptr};
-
-        public static implicit operator IntPtr(MiniBlink value)
-            => value._handle;
-
-        public bool HaveValue => _handle != IntPtr.Zero;
-
-        static MiniBlink()
-        {
-            Proxy = AutoDllProxy.DllModuleBuilder.Create().Build<IMiniBlinkProxy>();
-        }
-
-        public static bool IsGlobalInitialization = false;
-        public static object GlobalRoot = new object();
-
-        public static void Init()
-        {
-            if (!IsGlobalInitialization)
-                lock (GlobalRoot)
-                    if (!IsGlobalInitialization)
-                    {
-                        Proxy.Initialize();
-                        IsGlobalInitialization = Proxy.IsInitialize();
-                    }
-        }
-
-        public static IMiniBlinkProxy Create()
-        {
-            Init();
-            return Proxy;
-        }
     }
 }

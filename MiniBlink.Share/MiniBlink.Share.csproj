@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <RootNamespace>MiniBlink.Share.Share</RootNamespace>
+    <RootNamespace>MiniBlink.Share</RootNamespace>
 	  <TargetFrameworks>net472;netstandard2.1</TargetFrameworks>
 
   </PropertyGroup>
