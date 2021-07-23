@@ -1,0 +1,12 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <UseWPF>true</UseWPF>
+        <TargetFrameworks>net472;net5.0-windows</TargetFrameworks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\MiniBlink.Share\MiniBlink.Share.csproj" />
+    </ItemGroup>
+
+</Project>
